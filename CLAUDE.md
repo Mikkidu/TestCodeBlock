@@ -149,9 +149,18 @@ This project maintains a **two-level task tracking approach** for clarity and vi
 └── [ProjectName]_Guide.md # Quick reference
 ```
 
-### Language Rules
-- **Chat communication:** Russian (Русский)
-- **Code comments:** English
+### Git Workflow
+- **Commits:** Only create commits when explicitly requested by the user
+- Do NOT proactively create commits
+- User will ask: "commit this" or "/commit" when they want changes saved
+- **File Deletion:** Always check with user before deleting files (can be lost permanently)
+- **Safe Deletion:** Use git restore or git revert if file was tracked
+
+### Language Rules - STRICT
+- **Chat communication with user:** Russian (Русский) only
+- **Code comments:** English only - NO Russian comments in code files
+- **Variable/Function names:** English only
+- **Documentation files (.md):** Russian for content, English for code blocks
 
 ## Important Notes
 

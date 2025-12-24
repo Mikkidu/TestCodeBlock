@@ -35,6 +35,7 @@ namespace RobotProgramming.UI
             if (blockUI != null)
             {
                 blockUI.SetCommand(command);
+                blockUI.InitializeConnectors();
             }
 
             return blockUI;
