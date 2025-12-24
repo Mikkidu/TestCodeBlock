@@ -7,7 +7,11 @@
       "Bash(powershell -Command \"Get-ChildItem -Recurse | Select-Object -ExpandProperty FullName | head -50\")",
       "Bash(powershell -Command:*)",
       "Bash(dotnet build:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(Remove-Item \"D:\\\\Projects\\\\TestCodeBlock\\\\.Doc\\\\SnapApproachVariants.md\" -Force)",
+      "Bash(del \".\\\\.Doc\\\\SnapApproachVariants.md\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

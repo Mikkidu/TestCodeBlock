@@ -47,3 +47,9 @@
 - Description: Связать все системы, добавить кнопки Run/Stop/Reset, финальное тестирование
 - Blockers: None
 - Detailed plan: `.Doc/Tasks/8_Integration.md`
+
+## #9 Магнитный снап блоков к выходам
+- Status: [ ] Pending
+- Description: Реализовать визуальные входы/выходы блоков с магнитным снапом при перетаскивании
+- Blockers: None
+- Detailed plan: [.Doc/Tasks/9_SnapToOutputs.md](Tasks/9_SnapToOutputs.md)

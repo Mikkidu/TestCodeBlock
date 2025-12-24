@@ -1,4 +1,5 @@
 using RobotProgramming.Core;
+using RobotProgramming.Data;
 using RobotProgramming.Execution;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace RobotProgramming.UI
     {
         [SerializeField] private float snapDistance = 10f;
         [SerializeField] private Canvas canvas;
+        [SerializeField] private BlockFactory blockFactory;
 
         private ProgramSequence programSequence;
         private List<BlockUI> blocksInProgram = new List<BlockUI>();
@@ -45,15 +47,24 @@ namespace RobotProgramming.UI
                 return;
             }
 
-            // Создаем копию блока для программы
-            BlockUI blockCopy = Instantiate(droppedBlock);
-            blockCopy.gameObject.SetActive(true);
+            if (blockFactory == null)
+            {
+                Debug.LogError("ProgramArea: BlockFactory not assigned!");
+                return;
+            }
 
-            // Добавляем копию в программу
-            AddBlockToProgram(blockCopy);
+            // Запрашиваем фабрику создать блок с той же командой
+            CommandType commandType = droppedBlock.Command.Type;
+            BlockUI newBlock = blockFactory.CreateBlock(commandType, transform);
 
-            // Возвращаем оригинал в палитру
-            droppedBlock.ReturnToOriginalPosition();
+            if (newBlock != null)
+            {
+                // Добавляем новый блок в программу
+                AddBlockToProgram(newBlock);
+
+                // Возвращаем оригинал в палитру
+                droppedBlock.ReturnToOriginalPosition();
+            }
         }
 
         public void AddBlockToProgram(BlockUI blockUI)
