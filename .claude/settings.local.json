@@ -5,7 +5,9 @@
       "Bash(powershell -Command \"Get-ChildItem -Force | Select-Object -ExpandProperty Name\")",
       "Bash(powershell -Command \"Get-ChildItem -Hidden -Name\")",
       "Bash(powershell -Command \"Get-ChildItem -Recurse | Select-Object -ExpandProperty FullName | head -50\")",
-      "Bash(powershell -Command:*)"
+      "Bash(powershell -Command:*)",
+      "Bash(dotnet build:*)",
+      "Bash(rm:*)"
     ]
   }
 }
