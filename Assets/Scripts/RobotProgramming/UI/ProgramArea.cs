@@ -45,7 +45,15 @@ namespace RobotProgramming.UI
                 return;
             }
 
-            AddBlockToProgram(droppedBlock);
+            // Создаем копию блока для программы
+            BlockUI blockCopy = Instantiate(droppedBlock);
+            blockCopy.gameObject.SetActive(true);
+
+            // Добавляем копию в программу
+            AddBlockToProgram(blockCopy);
+
+            // Возвращаем оригинал в палитру
+            droppedBlock.ReturnToOriginalPosition();
         }
 
         public void AddBlockToProgram(BlockUI blockUI)

@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System;
 
 namespace RobotProgramming.UI
 {
@@ -29,6 +30,12 @@ namespace RobotProgramming.UI
             }
 
             rootCanvas = GetComponentInParent<Canvas>();
+            
+            if (canvasGroup != null)
+            {
+                canvasGroup.blocksRaycasts = true;
+                canvasGroup.alpha = 1f;
+            }
         }
 
         public void SetCommand(ICommand cmd)
@@ -82,11 +89,13 @@ namespace RobotProgramming.UI
             }
 
             // Will be repositioned by drop handler or return to original
-            if (eventData.pointerCurrentRaycast.gameObject == null ||
-                !eventData.pointerCurrentRaycast.gameObject.CompareTag("DropZone"))
-            {
-                ReturnToOriginalPosition();
-            }
+            //if (eventData.pointerCurrentRaycast.gameObject == null ||
+            //    !eventData.pointerCurrentRaycast.gameObject.CompareTag("DropZone"))
+            //{
+            //    ReturnToOriginalPosition();
+            //
+            //}
+            ReturnToOriginalPosition();
         }
 
         public void ReturnToOriginalPosition()
