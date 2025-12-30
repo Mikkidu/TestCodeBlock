@@ -201,6 +201,41 @@ namespace RobotProgramming.UI
             Debug.Log($"[CONNECTION INPUT→OUTPUT] {targetOutput.parentBlock.gameObject.name} → {draggingBlock.gameObject.name}");
         }
 
+        // Apply snap to position the dragging block with output aligned to target input
+        public void ApplySnapToInput(BlockUI draggingBlock, BlockConnector outputPoint, BlockConnector targetInput)
+        {
+            if (draggingBlock == null || outputPoint == null || targetInput == null)
+            {
+                return;
+            }
+
+            // Get the world position where we want the output point to be
+            Vector2 targetPosition = targetInput.GetWorldPosition();
+
+            // Get the current world position of the output point
+            Vector2 currentOutputWorldPos = outputPoint.GetWorldPosition();
+
+            // Calculate the offset we need to move the block
+            Vector2 offset = targetPosition - currentOutputWorldPos;
+
+            // Apply the offset to the block's position in world space
+            RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
+            if (blockRect != null)
+            {
+                blockRect.position = new Vector3(
+                    blockRect.position.x + offset.x,
+                    blockRect.position.y + offset.y,
+                    blockRect.position.z
+                );
+            }
+
+            // Create physical connection between blocks (Stage 6)
+            // Connection direction: dragging block's OUTPUT → target block's INPUT
+            outputPoint.connectedTo = targetInput;
+            OnSnap?.Invoke(draggingBlock.Command);
+            Debug.Log($"[CONNECTION OUTPUT→INPUT] {draggingBlock.gameObject.name} → {targetInput.parentBlock.gameObject.name}");
+        }
+
         // Get the snap distance for UI feedback
         public float GetSnapDistance()
         {
