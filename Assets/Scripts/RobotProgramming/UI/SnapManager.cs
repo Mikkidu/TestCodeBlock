@@ -217,6 +217,18 @@ namespace RobotProgramming.UI
 
             // Create physical connection between blocks (Stage 6)
             targetOutput.connectedTo = inputPoint;
+
+            // Return block to ProgramArea if it was moved to rootCanvas during drag
+            if (draggingBlock.inProgramArea)
+            {
+                ProgramArea programArea = draggingBlock.GetComponentInParent<ProgramArea>();
+                if (programArea != null)
+                {
+                    draggingBlock.transform.SetParent(programArea.transform, true);
+                    Debug.Log($"[RETURN TO PROGRAM] {draggingBlock.gameObject.name} returned to ProgramArea");
+                }
+            }
+
             OnSnap?.Invoke(draggingBlock.Command);
             Debug.Log($"[CONNECTION INPUT→OUTPUT] {targetOutput.parentBlock.gameObject.name} → {draggingBlock.gameObject.name}");
         }
@@ -276,19 +288,6 @@ namespace RobotProgramming.UI
                     );
                 }
 
-                // Step 4: Shift all remaining blocks after B (D, E, F...)
-                RectTransform cRectForHeight = draggingBlock.GetComponent<RectTransform>();
-                if (cRectForHeight != null)
-                {
-                    float blockHeight = cRectForHeight.rect.height;
-                    float padding = 10f;  // Small padding between blocks
-                    float shiftDistance = blockHeight + padding;
-
-                    // Shift blocks starting from B's next block
-                    BlockUI nextBlock = targetBlock.GetNextBlock();
-                    ShiftBlockChain(nextBlock, shiftDistance);
-                }
-
                 Debug.Log($"[DISCONNECT FOR INSERT] {previousOutput.parentBlock.gameObject.name} → {targetBlock.gameObject.name}");
             }
             else
@@ -316,6 +315,18 @@ namespace RobotProgramming.UI
 
             // Create physical connection: dragging block's OUTPUT → target INPUT
             outputPoint.connectedTo = targetInput;
+
+            // Return block to ProgramArea if it was moved to rootCanvas during drag
+            if (draggingBlock.inProgramArea)
+            {
+                ProgramArea programArea = draggingBlock.GetComponentInParent<ProgramArea>();
+                if (programArea != null)
+                {
+                    draggingBlock.transform.SetParent(programArea.transform, true);
+                    Debug.Log($"[RETURN TO PROGRAM] {draggingBlock.gameObject.name} returned to ProgramArea");
+                }
+            }
+
             OnSnap?.Invoke(draggingBlock.Command);
             Debug.Log($"[CONNECTION OUTPUT→INPUT] {draggingBlock.gameObject.name} → {targetInput.parentBlock.gameObject.name}");
         }
