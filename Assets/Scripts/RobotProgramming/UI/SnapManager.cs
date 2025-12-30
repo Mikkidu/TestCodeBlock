@@ -292,25 +292,22 @@ namespace RobotProgramming.UI
             }
             else
             {
-                // APPEND AT END: A → C (no previous block in chain)
-                // Position draggingBlock so its INPUT aligns with targetInput (A's OUTPUT)
-                if (draggingBlock.inputPoints.Count > 0)
-                {
-                    BlockConnector draggingInput = draggingBlock.inputPoints[0];
-                    Vector2 targetPosition = targetInput.GetWorldPosition();
-                    Vector2 currentInputWorldPos = draggingInput.GetWorldPosition();
-                    Vector2 offset = targetPosition - currentInputWorldPos;
+                // INSERT AT BEGINNING: X → A (no previous block connected to A's input)
+                // Position draggingBlock so its OUTPUT aligns with targetInput (A's INPUT)
+                Vector2 targetPosition = targetInput.GetWorldPosition();
+                Vector2 currentOutputWorldPos = outputPoint.GetWorldPosition();
+                Vector2 offset = targetPosition - currentOutputWorldPos;
 
-                    RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
-                    if (blockRect != null)
-                    {
-                        blockRect.position = new Vector3(
-                            blockRect.position.x + offset.x,
-                            blockRect.position.y + offset.y,
-                            blockRect.position.z
-                        );
-                    }
+                RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
+                if (blockRect != null)
+                {
+                    blockRect.position = new Vector3(
+                        blockRect.position.x + offset.x,
+                        blockRect.position.y + offset.y,
+                        blockRect.position.z
+                    );
                 }
+                Debug.Log($"[POSITION AT START] {draggingBlock.gameObject.name} OUTPUT aligned with {targetInput.parentBlock.gameObject.name} INPUT");
             }
 
             // Create physical connection: dragging block's OUTPUT → target INPUT
