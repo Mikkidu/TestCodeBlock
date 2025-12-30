@@ -59,5 +59,29 @@
   - ✓ Этап 5: Применение снапа (ApplySnap при OnDrop с палитры)
   - ✓ Этап 6: Выполнение по соединениям (GetNextBlock, навигация по connectedTo, правильный стартовый блок)
 - Blockers: None
-- Note: Параметры (типы данных) вынесены в отдельную задачу #10
+- Note: Параметры (типы данных) вынесены в отдельную задачу #12
 - Detailed plan: [.Doc/Tasks/9_SnapToOutputs.md](Tasks/9_SnapToOutputs.md)
+
+## #10a Снап в начало цепи
+- Status: [→] In Progress
+- Description: Реализовать снап выхода перетаскиваемого блока ко входу первого блока - позволяет вставлять блоки в начало цепи
+- Blockers: #9 (зависит от готовой snap системы)
+- Detailed plan: [.Doc/Tasks/10a_SnapToBeginning.md](Tasks/10a_SnapToBeginning.md)
+
+## #10b Снап в середину цепи
+- Status: Pending
+- Description: Реализовать вставку блока в середину цепи (между двумя блоками) с правильным переконектированием соединений
+- Blockers: #10a (нужна сначала вставка в начало)
+- Detailed plan: [.Doc/Tasks/10b_SnapToMiddle.md](Tasks/10b_SnapToMiddle.md)
+
+## #11 Блок цикла
+- Status: Pending
+- Description: Создать блок цикла с поддержкой вложенных блоков и выполнением нужное количество раз
+- Blockers: #10b (нужна полная snap система для подключения блоков внутри цикла)
+- Detailed plan: [.Doc/Tasks/11_LoopBlock.md](Tasks/11_LoopBlock.md)
+
+## #12 Параметры блоков
+- Status: Pending
+- Description: Добавить возможность задавать параметры к блокам (выпадающий список). Начать с числовых параметров (количество повторений)
+- Blockers: #11 (для реализации параметра "количество повторений" для цикла)
+- Detailed plan: [.Doc/Tasks/12_BlockParameters.md](Tasks/12_BlockParameters.md)
