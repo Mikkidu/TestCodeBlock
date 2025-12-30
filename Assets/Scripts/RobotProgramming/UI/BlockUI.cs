@@ -213,20 +213,34 @@ namespace RobotProgramming.UI
                 rectTransform.anchoredPosition += eventData.delta / rootCanvas.scaleFactor;
             }
 
-            // Find nearest output for snap feedback (only in program area)
+            // Find nearest snap point for visual feedback (only in program area)
             if (programArea != null && programArea.GetBlocks().Count > 0)
             {
                 SnapManager snapManager = programArea.GetSnapManager();
-                if (snapManager != null && inputPoints.Count > 0)
+                if (snapManager != null)
                 {
-                    SnapManager.SnapInfo snapInfo = snapManager.FindNearestOutput(this, programArea.GetBlocks());
+                    SnapManager.SnapInfo snapInfo = new SnapManager.SnapInfo { canSnap = false };
+
+                    // Priority 1: Check OUTPUT → INPUT snap
+                    if (outputPoints.Count > 0)
+                    {
+                        snapInfo = snapManager.FindNearestInput(this, programArea.GetBlocks());
+                    }
+
+                    // Priority 2: Check INPUT → OUTPUT snap
+                    if (!snapInfo.canSnap && inputPoints.Count > 0)
+                    {
+                        snapInfo = snapManager.FindNearestOutput(this, programArea.GetBlocks());
+                    }
 
                     // Update visual feedback (yellow highlight when ready)
                     UpdateSnapVisuals(snapInfo);
 
-                    if (snapInfo.canSnap && snapInfo.targetOutput != null)
+                    if (snapInfo.canSnap && snapInfo.targetConnector != null)
                     {
-                        Debug.Log($"[SNAP READY] {gameObject.name} → {snapInfo.targetBlock.gameObject.name} | Distance: {snapInfo.distance:F2}px");
+                        string snapTypeStr = snapInfo.snapType == SnapManager.SnapInfo.SnapType.OutputToInput
+                            ? "OUTPUT→INPUT" : "INPUT→OUTPUT";
+                        Debug.Log($"[SNAP READY {snapTypeStr}] {gameObject.name} → {snapInfo.targetBlock.gameObject.name} | Distance: {snapInfo.distance:F2}px");
                     }
                 }
             }
@@ -258,21 +272,40 @@ namespace RobotProgramming.UI
             if (programArea != null && programArea.GetBlocks().Count > 0)
             {
                 SnapManager snapManager = programArea.GetSnapManager();
-                if (snapManager != null && inputPoints.Count > 0)
+                if (snapManager != null)
                 {
-                    SnapManager.SnapInfo snapInfo = snapManager.FindNearestOutput(this, programArea.GetBlocks());
+                    SnapManager.SnapInfo snapInfo = new SnapManager.SnapInfo { canSnap = false };
 
-                    if (snapInfo.canSnap && snapInfo.targetOutput != null)
+                    // Priority 1: Try OUTPUT → INPUT snap (insert at beginning)
+                    if (outputPoints.Count > 0)
                     {
-                        // Apply snap to align input with target output
-                        snapManager.ApplySnap(this, inputPoints[0], snapInfo.targetOutput);
-                        Debug.Log($"[SNAP APPLIED] {gameObject.name} → {snapInfo.targetBlock.gameObject.name}");
+                        snapInfo = snapManager.FindNearestInput(this, programArea.GetBlocks());
+
+                        if (snapInfo.canSnap && snapInfo.targetConnector != null)
+                        {
+                            // Apply snap OUTPUT → INPUT
+                            snapManager.ApplySnapToInput(this, outputPoints[0], snapInfo.targetConnector);
+                            Debug.Log($"[SNAP APPLIED OUTPUT→INPUT] {gameObject.name} → {snapInfo.targetBlock.gameObject.name}");
+                            return;
+                        }
                     }
-                    else
+
+                    // Priority 2: Try INPUT → OUTPUT snap (append at end)
+                    if (!snapInfo.canSnap && inputPoints.Count > 0)
                     {
-                        // No snap, return to original position
-                        ReturnToOriginalPosition();
+                        snapInfo = snapManager.FindNearestOutput(this, programArea.GetBlocks());
+
+                        if (snapInfo.canSnap && snapInfo.targetConnector != null)
+                        {
+                            // Apply snap INPUT → OUTPUT
+                            snapManager.ApplySnap(this, inputPoints[0], snapInfo.targetConnector);
+                            Debug.Log($"[SNAP APPLIED INPUT→OUTPUT] {snapInfo.targetBlock.gameObject.name} → {gameObject.name}");
+                            return;
+                        }
                     }
+
+                    // No snap possible, return to original position
+                    ReturnToOriginalPosition();
                 }
                 else
                 {
