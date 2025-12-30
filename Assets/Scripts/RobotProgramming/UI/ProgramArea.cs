@@ -89,15 +89,34 @@ namespace RobotProgramming.UI
                 if (blocksInProgram.Count > 1)  // More than just the new block
                 {
                     SnapManager snapManager = GetSnapManager();
-                    if (snapManager != null && newBlock.inputPoints.Count > 0)
+                    if (snapManager != null)
                     {
-                        SnapManager.SnapInfo snapInfo = snapManager.FindNearestOutput(newBlock, blocksInProgram);
+                        SnapManager.SnapInfo snapInfo = new SnapManager.SnapInfo { canSnap = false };
 
-                        if (snapInfo.canSnap && snapInfo.targetConnector != null)
+                        // Priority 1: Try OUTPUT → INPUT snap (insert at beginning)
+                        if (newBlock.outputPoints.Count > 0)
                         {
-                            // Apply snap to align and connect
-                            snapManager.ApplySnap(newBlock, newBlock.inputPoints[0], snapInfo.targetConnector);
-                            Debug.Log($"[SNAP APPLIED INPUT→OUTPUT] {snapInfo.targetBlock.gameObject.name} → {newBlock.gameObject.name}");
+                            snapInfo = snapManager.FindNearestInput(newBlock, blocksInProgram);
+
+                            if (snapInfo.canSnap && snapInfo.targetConnector != null)
+                            {
+                                // Apply snap OUTPUT → INPUT
+                                snapManager.ApplySnapToInput(newBlock, newBlock.outputPoints[0], snapInfo.targetConnector);
+                                Debug.Log($"[SNAP APPLIED OUTPUT→INPUT] {newBlock.gameObject.name} → {snapInfo.targetBlock.gameObject.name}");
+                            }
+                        }
+
+                        // Priority 2: If no INPUT snap found, try INPUT → OUTPUT snap (append at end)
+                        if (!snapInfo.canSnap && newBlock.inputPoints.Count > 0)
+                        {
+                            snapInfo = snapManager.FindNearestOutput(newBlock, blocksInProgram);
+
+                            if (snapInfo.canSnap && snapInfo.targetConnector != null)
+                            {
+                                // Apply snap INPUT → OUTPUT
+                                snapManager.ApplySnap(newBlock, newBlock.inputPoints[0], snapInfo.targetConnector);
+                                Debug.Log($"[SNAP APPLIED INPUT→OUTPUT] {snapInfo.targetBlock.gameObject.name} → {newBlock.gameObject.name}");
+                            }
                         }
                         // If snap not possible, block stays at drop position
                     }
