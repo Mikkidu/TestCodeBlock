@@ -431,5 +431,74 @@ namespace RobotProgramming.UI
                 }
             }
         }
+
+        /// <summary>
+        /// Align this block to its input connection and propagate alignment to next block.
+        /// Called recursively down the chain after a block is inserted.
+        /// </summary>
+        public void AlignToInputConnection()
+        {
+            // Skip if no input points or not in program area
+            if (inputPoints.Count == 0 || !inProgramArea)
+            {
+                return;
+            }
+
+            BlockConnector myInput = inputPoints[0];
+            if (myInput == null)
+            {
+                return;
+            }
+
+            // Find which OUTPUT is connected to my INPUT
+            ProgramArea programArea = GetComponentInParent<ProgramArea>();
+            if (programArea == null)
+            {
+                return;
+            }
+
+            BlockConnector connectedOutput = null;
+            foreach (BlockUI block in programArea.GetBlocks())
+            {
+                if (block == this) continue;
+
+                foreach (BlockConnector output in block.outputPoints)
+                {
+                    if (output.connectedTo == myInput)
+                    {
+                        connectedOutput = output;
+                        break;
+                    }
+                }
+
+                if (connectedOutput != null) break;
+            }
+
+            // If found, align myself to that output
+            if (connectedOutput != null)
+            {
+                Vector2 outputPos = connectedOutput.GetWorldPosition();
+                Vector2 myInputPos = myInput.GetWorldPosition();
+                Vector2 offset = outputPos - myInputPos;
+
+                RectTransform rect = GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.position = new Vector3(
+                        rect.position.x + offset.x,
+                        rect.position.y + offset.y,
+                        rect.position.z
+                    );
+                    Debug.Log($"[ALIGN] {gameObject.name} aligned to {connectedOutput.parentBlock.gameObject.name}");
+                }
+
+                // Propagate alignment to next block in chain
+                BlockUI nextBlock = GetNextBlock();
+                if (nextBlock != null)
+                {
+                    nextBlock.AlignToInputConnection();
+                }
+            }
+        }
     }
 }
