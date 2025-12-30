@@ -223,6 +223,7 @@ namespace RobotProgramming.UI
 
             // Disconnect from any connected blocks when starting drag (Stage 6)
             DisconnectOutput();
+            DisconnectInput();  // NEW: Also disconnect incoming connections
 
             // Move to root canvas for dragging
             if (rootCanvas != null)
@@ -383,6 +384,38 @@ namespace RobotProgramming.UI
             {
                 outputPoints[outputIndex].connectedTo = null;
                 Debug.Log($"[DISCONNECT] {gameObject.name} output {outputIndex}");
+            }
+        }
+
+        /// <summary>
+        /// Disconnect any incoming connection to this block's input.
+        /// Finds which block's output is connected to our input and breaks that connection.
+        /// Stage 6: Break incoming connections when dragging.
+        /// </summary>
+        public void DisconnectInput(int inputIndex = 0)
+        {
+            if (inputIndex >= 0 && inputIndex < inputPoints.Count)
+            {
+                BlockConnector inputPoint = inputPoints[inputIndex];
+
+                // Find which block's output is connected to this input
+                if (programArea != null)
+                {
+                    foreach (BlockUI block in programArea.GetBlocks())
+                    {
+                        if (block == this) continue;
+
+                        foreach (BlockConnector output in block.outputPoints)
+                        {
+                            if (output.connectedTo == inputPoint)
+                            {
+                                output.connectedTo = null;
+                                Debug.Log($"[DISCONNECT INCOMING] {block.gameObject.name} output → {gameObject.name} input");
+                                return;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
