@@ -136,6 +136,7 @@ This project maintains a **two-level task tracking approach** for clarity and vi
 
 **Task Workflow:**
 - Starting a task: Read `.Doc/Issues.md` for overview, then `.Doc/Tasks/` for detailed plan
+- **Planning implementation:** ALWAYS read relevant existing code files BEFORE planning changes. Understand current implementation, then create concrete plan based on real code state. Never plan based only on documentation.
 - During implementation: Use TodoWrite tool for actionable subtask lists
 - Completing a task: Mark `[✓] Done` in both files
 - If blocked: Update Blockers field, do NOT close task—keep it visible

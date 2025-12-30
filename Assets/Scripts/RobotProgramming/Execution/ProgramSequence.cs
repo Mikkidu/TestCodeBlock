@@ -1,5 +1,6 @@
 using RobotProgramming.Core;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RobotProgramming.Execution
 {
@@ -15,6 +16,21 @@ namespace RobotProgramming.Execution
         {
             commandsById = new Dictionary<int, ICommand>();
             startCommand = null;
+        }
+
+        public void CheckSnappedCommand(ICommand command)
+        {
+            if (command.Id == startCommand.Id)
+            {
+                var temp = commandsById.Values.ToList();
+                foreach (var com in commandsById.Values)
+                {
+                    if (temp.Contains(com.Next))
+                        temp.Remove(com);
+                }
+                if (temp.Count > 0)
+                    startCommand = temp[0];
+            }
         }
 
         public void AddCommand(ICommand command)

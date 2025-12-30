@@ -6,17 +6,18 @@
 ## Контекст
 - Текущая система просто стакует блоки вертикально
 - Нужна новая система где блоки визуально связаны через входы/выходы
+- Выполнение программы должно идти по физическим соединениям блоков, не по Y-позиции
 - В будущем появятся блоки с несколькими выходами (условные ветвления)
-- Архитектура должна поддерживать передачу параметров между блоками
+- **Параметры (типы данных) вынесены в отдельную задачу #10**
 
-## Требования
+## Требования (Задача #9 - 6 этапов)
 1. **Визуальные точки входа/выхода** - маленькие кружки обозначающие места подключения
 2. **Магнитный снап** - при drag блок примагничивается к ближайшему выходу
 3. **Расстояние snap** - настраиваемое расстояние активации магнита (~50px)
 4. **Позиционирование** - при примагничивании блок выравнивается по выходу другого блока
 5. **Отпускание** - блок остается в примагниченной позиции
 6. **Разрыв связи** - можно перетащить блок в пустое место чтобы разорвать связь
-7. **Заготовка для параметров** - архитектура должна поддерживать передачу параметров
+7. **Выполнение по соединениям** - программа выполняется по физическим связям между блоками
 
 ---
 
@@ -116,7 +117,9 @@ public class SnapManager : MonoBehaviour
 
 ---
 
-## План реализации (7 проверяемых этапов)
+## План реализации (6 проверяемых этапов)
+
+**ВАЖНО:** Этап 7 (Инфраструктура для параметров) вынесен в отдельную задачу #10
 
 ### Этап 1: Инфраструктура (30 мин)
 **Цель:** Создать классы для точек подключения
@@ -341,13 +344,15 @@ public class SnapManager : MonoBehaviour
 
 ---
 
-### Этап 6: Выполнение по соединениям (60 мин)
+### Этап 6: Выполнение по соединениям (60 мин) - ФИНАЛЬНЫЙ ЭТАП
 **Цель:** Связать выполнение команд с физическими соединениями между блоками через BlockConnector
 
 **Контекст:**
 Исходная архитектура предусматривала связанный список через соединения, а не Y-позицию.
 При snap блоки физически соединяются (Output ↔ Input).
 При выполнении программы нужно идти по этим соединениям.
+
+**Это финальный этап задачи #9.** После его завершения система магнитного снапа полностью работает.
 
 **Действия:**
 
@@ -553,190 +558,6 @@ public IEnumerator ExecuteProgram(BlockUI startBlock)
 
 ---
 
-### Этап 7: Инфраструктура для параметров (45 мин)
-**Цель:** Подготовить архитектуру BlockConnector для передачи параметров между блоками
-
-**Контекст:**
-После Этапа 6 соединения уже работают физически (Output ↔ Input).
-Этап 7 расширяет BlockConnector чтобы поддерживать типы параметров и валидацию.
-Это закладывает основу для блоков которые передают данные (например: "Захватить объект" → положение → "Поместить объект").
-
-**Действия:**
-
-#### 1. Расширить BlockConnector параметрами
-```csharp
-public class BlockConnector
-{
-    public enum PointType { Input, Output }
-
-    // СУЩЕСТВУЮЩИЕ
-    public PointType pointType;
-    public RectTransform visualElement;
-    public BlockUI parentBlock;
-    public BlockConnector connectedTo;
-
-    // НОВОЕ: типы параметров для валидации и передачи
-    public enum ParameterType { None, Number, String, Boolean, Vector, Color }
-
-    public ParameterType parameterType = ParameterType.None;
-    public string parameterName = "";  // "position", "speed", "targetObject", etc.
-
-    // Для хранения значения параметра (в будущем)
-    public object parameterValue;
-
-    public BlockConnector(PointType type, RectTransform visual)
-    {
-        pointType = type;
-        visualElement = visual;
-    }
-
-    // Получить мировую позицию точки
-    public Vector2 GetWorldPosition()
-    {
-        Vector3[] corners = new Vector3[4];
-        visualElement.GetWorldCorners(corners);
-        return (Vector2)((corners[0] + corners[2]) / 2f);
-    }
-
-    /// <summary>
-    /// Проверить может ли этот connector подключиться к другому.
-    /// Валидация типов параметров.
-    /// </summary>
-    public bool CanConnectTo(BlockConnector other)
-    {
-        if (other == null) return false;
-
-        // Если типы не определены - можно подключать
-        if (parameterType == ParameterType.None) return true;
-        if (other.parameterType == ParameterType.None) return true;
-
-        // Типы должны совпадать
-        return parameterType == other.parameterType;
-    }
-}
-```
-
-#### 2. Обновить SnapManager для валидации
-При snap проверять совместимость типов:
-```csharp
-public void ApplySnap(BlockUI draggingBlock,
-                      BlockConnector inputPoint,
-                      BlockConnector targetOutput)
-{
-    if (draggingBlock == null || inputPoint == null || targetOutput == null)
-    {
-        return;
-    }
-
-    // Проверить совместимость типов параметров (НОВОЕ)
-    if (!targetOutput.CanConnectTo(inputPoint))
-    {
-        Debug.LogWarning($"[INCOMPATIBLE] Cannot connect {targetOutput.parameterType} " +
-                         $"to {inputPoint.parameterType}");
-        return;  // Snap отклонить если типы несовместимы
-    }
-
-    // ... выравнивание позиции ...
-
-    // Создать соединение
-    targetOutput.connectedTo = inputPoint;
-    Debug.Log($"[CONNECTION] {targetOutput.parentBlock.gameObject.name} " +
-              $"({targetOutput.parameterType}) → " +
-              $"{inputPoint.parentBlock.gameObject.name} ({inputPoint.parameterType})");
-}
-```
-
-#### 3. Обновить BlockFactory для параметров
-При создании блоков передачи данных устанавливать типы:
-```csharp
-public BlockUI CreateBlock(CommandType commandType, Transform parent)
-{
-    BlockUI blockUI = Instantiate(blockPrefab, parent).GetComponent<BlockUI>();
-
-    ICommand command = CommandFactory.CreateCommand(commandType);
-    blockUI.SetCommand(command);
-    blockUI.InitializeConnectors();
-
-    // TODO: Для блоков которые передают данные, установить типы параметров
-    // Пример (когда будут такие блоки):
-    /*
-    if (commandType == CommandType.GetObjectPosition)
-    {
-        // Выход: координаты объекта
-        if (blockUI.outputPoints.Count > 0)
-        {
-            blockUI.outputPoints[0].parameterType = BlockConnector.ParameterType.Vector;
-            blockUI.outputPoints[0].parameterName = "position";
-        }
-    }
-
-    if (commandType == CommandType.MoveToPosition)
-    {
-        // Вход: целевые координаты
-        if (blockUI.inputPoints.Count > 0)
-        {
-            blockUI.inputPoints[0].parameterType = BlockConnector.ParameterType.Vector;
-            blockUI.inputPoints[0].parameterName = "targetPosition";
-        }
-    }
-    */
-
-    return blockUI;
-}
-```
-
-#### 4. Добавить визуальную индикацию типов (опционально)
-В `BlockUI.InitializeConnectors()` можно устанавливать разные цвета для разных типов:
-```csharp
-// Пример: разные цвета для разных типов параметров
-private void SetConnectorColorByType(BlockConnector connector)
-{
-    Image image = connector.visualElement.GetComponent<Image>();
-    if (image == null) return;
-
-    switch (connector.parameterType)
-    {
-        case BlockConnector.ParameterType.None:
-            image.color = connector.pointType == BlockConnector.PointType.Input
-                ? new Color(0f, 1f, 0f, 1f)      // Green для Input
-                : new Color(1f, 0f, 0f, 1f);     // Red для Output
-            break;
-
-        case BlockConnector.ParameterType.Number:
-            image.color = new Color(0f, 0.5f, 1f, 1f);  // Blue
-            break;
-
-        case BlockConnector.ParameterType.String:
-            image.color = new Color(1f, 1f, 0f, 1f);    // Yellow
-            break;
-
-        case BlockConnector.ParameterType.Vector:
-            image.color = new Color(1f, 0.5f, 0f, 1f);  // Orange
-            break;
-
-        case BlockConnector.ParameterType.Boolean:
-            image.color = new Color(1f, 0f, 1f, 1f);    // Magenta
-            break;
-    }
-}
-```
-
-**Файлы для изменения:**
-- ✓ Изменить: `BlockConnector.cs` (добавить ParameterType, parameterName, CanConnectTo)
-- ✓ Изменить: `SnapManager.cs` (валидация типов при snap)
-- ✓ Изменить: `BlockFactory.cs` (TODO комментарии для будущих блоков)
-- Опционально: `BlockUI.cs` (SetConnectorColorByType для визуализации)
-
-**Проверка:**
-- ✓ BlockConnector имеет поля ParameterType и parameterName
-- ✓ Метод CanConnectTo() корректно валидирует типы
-- ✓ Snap отклоняется если типы несовместимы
-- ✓ Есть TODO комментарии для создания блоков передачи данных
-- ✓ Нет регрессии функционала Этапа 1-6
-- ✓ Architecture готова для расширения (параметры в будущем)
-
----
-
 ## Итоговая архитектура после выполнения всех этапов
 
 ### Иерархия соединений (связанный список):
@@ -761,13 +582,9 @@ Block A (Start)
 BlockConnector
 ├── pointType: Input / Output
 ├── visualElement: RectTransform (кружок на экране)
-├── parentBlock: BlockUI (владелец точки)
+├── parentBlock: BlockUI (владелец точки) ← STAGE 6
 ├── connectedTo: BlockConnector (физическое соединение) ← STAGE 6
-├── parameterType: None/Number/String/Vector/Boolean/Color ← STAGE 7
-├── parameterName: "position", "speed", etc. ← STAGE 7
-├── parameterValue: object (значение) ← STAGE 7
-├── GetWorldPosition(): Vector2 (координаты)
-└── CanConnectTo(other): bool (валидация типов) ← STAGE 7
+└── GetWorldPosition(): Vector2 (координаты)
 ```
 
 **BlockUI (блок программы)**
@@ -802,7 +619,6 @@ SnapManager
 ├── ApplySnap(draggingBlock, input, output) ← STAGE 5-6
 │   ├── Выравнять позицию блока
 │   └── Создать соединение: output.connectedTo = input ← STAGE 6
-│   └── Валидировать типы: CanConnectTo() ← STAGE 7
 ├── GetSnapDistance(): float
 └── SetSnapDistance(float)
 ```
@@ -843,25 +659,26 @@ ProgramArea
    Программа завершена
 ```
 
-### Цветовая схема (STAGE 4-5):
+### Цветовая схема (текущая реализация):
 ```
 Input point (зелёный):  ●
 Output point (красный): ●
 Ready to snap (жёлтый): ●
+```
 
-Для параметров (STAGE 7 опционально):
+**Будущее (Задача #10 - типы параметров):**
+```
 Number (синий):   ●
 String (жёлтый):  ●
 Vector (оранжевый): ●
 Boolean (розовый): ●
 ```
 
-### Архитектурные преимущества:
+### Архитектурные преимущества задачи #9:
 ✅ **Связанный список** - логика выполнения = физические соединения
 ✅ **Множественные выходы** - готово для If/Else (outputPoints[1], [2]...)
-✅ **Параметры** - BlockConnector готов к передаче данных
 ✅ **Группировка** - можем управлять блоками начиная от выбранного по соединениям
-✅ **Расширяемость** - Вариант C (BlockConnection объекты) можно добавить позже без переработки
+✅ **Расширяемость** - архитектура готова для параметров (Задача #10) без рефакторинга
 ✅ **Без рефакторинга** - Y-позиция не используется, логика не зависит от визуального порядка
 ```
 
@@ -876,30 +693,24 @@ Boolean (розовый): ●
 - ✓ При OnEndDrag блок встает в примагниченную позицию (snap применяется)
 - ✓ Блоки визуально выравниваются при snap
 
-### После Этап 6 (Выполнение по соединениям):
-- ✓ **Соединения создаются при snap** (Output.connectedTo = Input)
-- ✓ **GetNextBlock() возвращает правильный следующий блок**
-- ✓ **Выполнение идет по соединениям, не по Y-позиции**
-- ✓ **Программа выполняется в правильном порядке** (по физической цепочке)
-- ✓ **Последний блок.GetNextBlock() = null** (конец программы)
-- ✓ Логи [CONNECTION] при snap показывают создание соединения
-- ✓ DisconnectOutput() разрывает соединение (опционально)
+### После Этап 6 (Выполнение по соединениям) - ФИНАЛЬНЫЕ КРИТЕРИИ:
+- [ ] **Соединения создаются при snap** (Output.connectedTo = Input)
+- [ ] **GetNextBlock() возвращает правильный следующий блок**
+- [ ] **Выполнение идет по соединениям, не по Y-позиции**
+- [ ] **Программа выполняется в правильном порядке** (по физической цепочке)
+- [ ] **Последний блок.GetNextBlock() = null** (конец программы)
+- [ ] Логи [CONNECTION] при snap показывают создание соединения
+- [ ] DisconnectOutput() разрывает соединение (опционально)
 
-### После Этап 7 (Параметры):
-- ✓ BlockConnector имеет поля ParameterType и parameterName
-- ✓ Метод CanConnectTo() валидирует совместимость типов
-- ✓ Snap отклоняется если типы несовместимы (логирует [INCOMPATIBLE])
-- ✓ Структура готова для передачи параметров (parameterValue)
-- ✓ Есть TODO комментарии в BlockFactory для блоков передачи данных
-- ✓ Архитектура готова для визуальной индикации типов (разные цвета)
+### Общие критерии (итоговая приемка задачи #9):
+- [ ] Robot выполняет программу в правильном порядке
+- [ ] Нет регрессии существующего функционала (Этапы 1-5)
+- [ ] Каждый этап разработки проверен и работает
+- [ ] Архитектура поддерживает If/Else (outputPoints[1], [2]...) для будущих задач
+- [ ] Архитектура поддерживает параллельные потоки (множественные выходы)
+- [ ] Архитектура поддерживает группировку блоков (навигация по соединениям)
 
-### Общие критерии:
-- ✓ Robot выполняет программу в правильном порядке
-- ✓ Нет регрессии существующего функционала (Stages 1-5)
-- ✓ Каждый этап разработки проверен и работает
-- ✓ Архитектура поддерживает If/Else (outputPoints[1], [2]...)
-- ✓ Архитектура поддерживает параллельные потоки (множественные выходы)
-- ✓ Архитектура поддерживает группировку блоков (навигация по соединениям)
+**Примечание:** Типы параметров и валидация данных будут реализованы в отдельной задаче #10
 
 ---
 
@@ -995,29 +806,32 @@ Vector2 worldPos = (Vector2)((corners[0] + corners[2]) / 2f);
 
 ## Заметки
 
-### Архитектура (Вариант B - Выполнено):
+### Архитектура (Вариант B - В процессе реализации):
 - ✓ Выполнение через соединения (connectedTo), не Y-позицию
 - ✓ Связанный список: Output.connectedTo → Input.parentBlock
-- ✓ GetNextBlock() для навигации по цепочке
+- [ ] GetNextBlock() для навигации по цепочке (Этап 6)
 - ✓ Готово для If/Else (outputPoints[1], [2]...) без рефакторинга
-- ✓ Готово для параметров (ParameterType, parameterValue)
 - ✓ Готово для группировки (навигация по соединениям)
+
+### Будущие задачи (вне рамок #9):
+- **Задача #10:** Типы параметров (Number, String, Vector, Boolean)
+- **Задача #10:** Валидация типов при соединении (CanConnectTo)
+- **Задача #10:** Передача данных между блоками (parameterValue)
+- Визуальное редактирование параметров в соединениях
+- Разные цвета для разных типов параметров
 
 ### Визуальные улучшения (Будущее):
 - Маленькие кружки (BlockConnector visual) можно сделать интерактивны (hover)
 - Можно рисовать Bezier кривые между соединенными точками
 - Разные цвета для разных выходов If/Else (True/False)
-- Разные цвета для разных типов параметров (Number/String/Vector/Boolean)
 - snapDistance можно сделать настраиваемым в Inspector (50-100px рекомендуется)
 
 ### Оптимизации (Будущее):
 - Кэширование сортировки блоков (если потребуется)
 - Pooling BlockConnector объектов если много соединений
-- Визуальное редактирование параметров в соединениях
 
-### Отладка:
+### Отладка (текущая задача #9):
 - Логи [CONNECTION] при создании соединения
-- Логи [INCOMPATIBLE] при отклонении snap из-за типов (Stage 7)
 - Логи [DISCONNECT] при разрыве соединения
 - Логи [EXECUTE] при выполнении каждого блока
-- Логи [CYCLE] при попытке создать циклическое соединение
+- Логи [CYCLE] при попытке создать циклическое соединение (опционально)

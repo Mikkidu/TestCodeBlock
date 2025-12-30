@@ -49,15 +49,15 @@
 - Detailed plan: `.Doc/Tasks/8_Integration.md`
 
 ## #9 Магнитный снап блоков к выходам
-- Status: [→] In Progress (5/6 этапов выполнено - последний: 24.12.2025)
+- Status: [✓] Done (2025-12-30)
 - Description: Реализовать визуальные входы/выходы блоков с магнитным снапом и выполнение по физическим соединениям
 - Progress:
   - ✓ Этап 1: Инфраструктура (BlockConnector)
   - ✓ Этап 2: Визуальные точки (Inspector assignment)
   - ✓ Этап 3: SnapManager и поиск (FindNearestOutput)
   - ✓ Этап 4: Визуальный feedback (Colors: Green/Red/Yellow)
-  - ✓ Этап 5: Применение снапа (ApplySnap при OnEndDrag)
-  - [ ] Этап 6: Выполнение по соединениям (GetNextBlock, навигация по connectedTo)
+  - ✓ Этап 5: Применение снапа (ApplySnap при OnDrop с палитры)
+  - ✓ Этап 6: Выполнение по соединениям (GetNextBlock, навигация по connectedTo, правильный стартовый блок)
 - Blockers: None
 - Note: Параметры (типы данных) вынесены в отдельную задачу #10
 - Detailed plan: [.Doc/Tasks/9_SnapToOutputs.md](Tasks/9_SnapToOutputs.md)

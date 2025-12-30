@@ -152,6 +152,7 @@ namespace RobotProgramming.UI
                 }
 
                 BlockConnector inputConnector = new BlockConnector(BlockConnector.PointType.Input, inputPointVisual);
+                inputConnector.parentBlock = this;  // Set owner reference for navigation
                 inputPoints.Add(inputConnector);
             }
             else
@@ -172,6 +173,7 @@ namespace RobotProgramming.UI
                     }
 
                     BlockConnector outputConnector = new BlockConnector(BlockConnector.PointType.Output, outputVisual);
+                    outputConnector.parentBlock = this;  // Set owner reference for navigation
                     outputPoints.Add(outputConnector);
                 }
             }
@@ -192,6 +194,9 @@ namespace RobotProgramming.UI
 
             originalParent = transform.parent;
             originalSiblingIndex = transform.GetSiblingIndex();
+
+            // Disconnect from any connected blocks when starting drag (Stage 6)
+            DisconnectOutput();
 
             // Move to root canvas for dragging
             if (rootCanvas != null)
@@ -285,6 +290,41 @@ namespace RobotProgramming.UI
         {
             transform.SetParent(originalParent, false);
             transform.SetSiblingIndex(originalSiblingIndex);
+        }
+
+        /// <summary>
+        /// Get the next block connected to this block's output.
+        /// Returns null if no block is connected (end of chain).
+        /// Stage 6: Navigate by physical connections, not Y-position.
+        /// </summary>
+        public BlockUI GetNextBlock()
+        {
+            // Get the first output point
+            if (outputPoints.Count > 0 && outputPoints[0] != null)
+            {
+                BlockConnector output = outputPoints[0];
+
+                // If there's a connection to another block
+                if (output.connectedTo != null)
+                {
+                    return output.connectedTo.parentBlock;
+                }
+            }
+
+            return null;  // End of chain
+        }
+
+        /// <summary>
+        /// Disconnect this block's output from any connected block.
+        /// Stage 6: Break physical connections when dragging.
+        /// </summary>
+        public void DisconnectOutput(int outputIndex = 0)
+        {
+            if (outputIndex >= 0 && outputIndex < outputPoints.Count)
+            {
+                outputPoints[outputIndex].connectedTo = null;
+                Debug.Log($"[DISCONNECT] {gameObject.name} output {outputIndex}");
+            }
         }
     }
 }

@@ -11,6 +11,10 @@ namespace RobotProgramming.UI
         public PointType pointType;
         public RectTransform visualElement;  // Small UI circle/element for connection point
 
+        // Connection navigation - Stage 6
+        public BlockUI parentBlock;           // Reference to the block that owns this connector
+        public BlockConnector connectedTo;    // Physical connection to another connector
+
         // Future use - parameter passing
         public ParameterType parameterType = ParameterType.None;
         public string parameterName = "";

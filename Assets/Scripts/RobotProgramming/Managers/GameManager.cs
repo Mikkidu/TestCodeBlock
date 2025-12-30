@@ -132,8 +132,9 @@ namespace RobotProgramming.Managers
                 return;
             }
 
-            ICommand startCommand = programArea.GetProgramStartCommand();
-            if (startCommand == null)
+            // Stage 6: Execute via BlockUI connections instead of Command.Next
+            BlockUI startBlock = programArea.GetFirstBlock();
+            if (startBlock == null)
             {
                 Debug.LogWarning("No program to run! Please add blocks to the program area.");
                 UpdateStatusDisplay("Программа пуста!");
@@ -146,7 +147,7 @@ namespace RobotProgramming.Managers
 
             if (commandExecutor != null && robotController != null)
             {
-                commandExecutor.ExecuteProgram(startCommand, robotController);
+                commandExecutor.ExecuteProgramFromBlock(startBlock, robotController);
             }
         }
 

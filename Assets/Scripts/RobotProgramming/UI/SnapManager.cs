@@ -1,10 +1,15 @@
 using System.Collections.Generic;
+
+using System;
+using RobotProgramming.Core;
 using UnityEngine;
 
 namespace RobotProgramming.UI
 {
     public class SnapManager : MonoBehaviour
     {
+        public event Action<ICommand> OnSnap;
+        
         [SerializeField] private float snapDistance = 50f;
 
         public struct SnapInfo
@@ -111,6 +116,11 @@ namespace RobotProgramming.UI
                     blockRect.position.z
                 );
             }
+
+            // Create physical connection between blocks (Stage 6)
+            targetOutput.connectedTo = inputPoint;
+            OnSnap?.Invoke(draggingBlock.Command);
+            Debug.Log($"[CONNECTION] {targetOutput.parentBlock.gameObject.name} → {inputPoint.parentBlock.gameObject.name}");
         }
 
         // Get the snap distance for UI feedback

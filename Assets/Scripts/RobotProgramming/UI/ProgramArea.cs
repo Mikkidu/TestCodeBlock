@@ -38,6 +38,7 @@ namespace RobotProgramming.UI
 
             programSequence = new ProgramSequence();
 
+            snapManager.OnSnap += programSequence.CheckSnappedCommand;
             gameObject.tag = "DropZone";
         }
 
@@ -84,6 +85,24 @@ namespace RobotProgramming.UI
                 // Add the new block to the program
                 AddBlockToProgram(newBlock);
 
+                // Stage 6: Check for snap with existing blocks
+                if (blocksInProgram.Count > 1)  // More than just the new block
+                {
+                    SnapManager snapManager = GetSnapManager();
+                    if (snapManager != null && newBlock.inputPoints.Count > 0)
+                    {
+                        SnapManager.SnapInfo snapInfo = snapManager.FindNearestOutput(newBlock, blocksInProgram);
+
+                        if (snapInfo.canSnap && snapInfo.targetOutput != null)
+                        {
+                            // Apply snap to align and connect
+                            snapManager.ApplySnap(newBlock, newBlock.inputPoints[0], snapInfo.targetOutput);
+                            Debug.Log($"[SNAP APPLIED] {newBlock.gameObject.name} → {snapInfo.targetBlock.gameObject.name}");
+                        }
+                        // If snap not possible, block stays at drop position
+                    }
+                }
+
                 // Return the original block to the palette
                 droppedBlock.ReturnToOriginalPosition();
             }
@@ -96,35 +115,18 @@ namespace RobotProgramming.UI
             // Add to sequence
             programSequence.AddCommand(command);
             blocksInProgram.Add(blockUI);
-            
+
             blockUI.inProgramArea = true;
 
-            // Link with previous block
-            if (blocksInProgram.Count > 1)
-            {
-                BlockUI previousBlock = blocksInProgram[blocksInProgram.Count - 2];
-                if (previousBlock.Command != null)
-                {
-                    previousBlock.Command.Next = command;
-                }
-            }
+            // Stage 6: Linking is now done via physical connections (snap), not Y-position
+            // Old Command.Next linking removed - execution follows BlockUI.GetNextBlock()
 
-            // Position block below the last one
-            RectTransform blockRect = blockUI.GetComponent<RectTransform>();
+            // Stage 6: Position is set by OnDrop (with snap if applicable), don't override it
+            RectTransform blockRect = blockUI.transform as RectTransform;
             if (blockRect != null)
             {
                 blockRect.SetParent(transform, false);
-
-                Vector2 newPos = Vector2.zero;
-                if (blocksInProgram.Count > 1)
-                {
-                    RectTransform prevRect = blocksInProgram[blocksInProgram.Count - 2].GetComponent<RectTransform>();
-                    if (prevRect != null)
-                    {
-                        newPos.y = prevRect.anchoredPosition.y - prevRect.rect.height - 10f;
-                    }
-                }
-                blockRect.anchoredPosition = newPos;
+                // anchoredPosition already set in OnDrop - keep it!
             }
 
             // Set first block as start
@@ -137,6 +139,54 @@ namespace RobotProgramming.UI
         public ICommand GetProgramStartCommand()
         {
             return programSequence.StartCommand;
+        }
+
+        /// <summary>
+        /// Get the first block in the program for execution.
+        /// Stage 6: Find the starting block - one with NO incoming connection.
+        /// A block has an incoming connection if another block's output is connected to its input.
+        /// </summary>
+        public BlockUI GetFirstBlock()
+        {
+            // Find the starting block: one that has NO incoming connection
+            foreach (BlockUI block in blocksInProgram)
+            {
+                if (block.inputPoints.Count > 0)
+                {
+                    BlockConnector inputPoint = block.inputPoints[0];
+
+                    // Check if any other block's output is connected to this input
+                    bool hasIncomingConnection = false;
+                    foreach (BlockUI otherBlock in blocksInProgram)
+                    {
+                        if (otherBlock == block) continue;
+
+                        foreach (BlockConnector output in otherBlock.outputPoints)
+                        {
+                            if (output.connectedTo == inputPoint)
+                            {
+                                hasIncomingConnection = true;
+                                break;
+                            }
+                        }
+
+                        if (hasIncomingConnection) break;
+                    }
+
+                    if (!hasIncomingConnection)
+                    {
+                        return block;  // This is the starting block
+                    }
+                }
+            }
+
+            // Fallback: return first block if no block without incoming connection found
+            if (blocksInProgram.Count > 0)
+            {
+                return blocksInProgram[0];
+            }
+
+            return null;
         }
 
         public void ClearProgram()
