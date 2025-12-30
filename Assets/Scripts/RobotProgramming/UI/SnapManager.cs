@@ -229,26 +229,6 @@ namespace RobotProgramming.UI
                 return;
             }
 
-            // Get the world position where we want the output point to be
-            Vector2 targetPosition = targetInput.GetWorldPosition();
-
-            // Get the current world position of the output point
-            Vector2 currentOutputWorldPos = outputPoint.GetWorldPosition();
-
-            // Calculate the offset we need to move the block
-            Vector2 offset = targetPosition - currentOutputWorldPos;
-
-            // Apply the offset to the block's position in world space
-            RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
-            if (blockRect != null)
-            {
-                blockRect.position = new Vector3(
-                    blockRect.position.x + offset.x,
-                    blockRect.position.y + offset.y,
-                    blockRect.position.z
-                );
-            }
-
             // Stage 6b: Handle insertion into middle of chain
             // Check if there's already an OUTPUT connected to targetInput
             BlockConnector previousOutput = FindConnectedOutput(targetInput,
@@ -256,30 +236,81 @@ namespace RobotProgramming.UI
 
             if (previousOutput != null)
             {
-                // INSERTION INTO MIDDLE:
-                // Disconnect previous connection: previousOutput → targetInput
-                previousOutput.connectedTo = null;
-                Debug.Log($"[DISCONNECT FOR INSERT] {previousOutput.parentBlock.gameObject.name} → {targetInput.parentBlock.gameObject.name}");
-
-                // Reconnect previous to dragging block's INPUT
+                // INSERTION INTO MIDDLE: A → C → B
+                // Step 1: Position draggingBlock (C) so its INPUT aligns with previousOutput (A's OUTPUT)
                 if (draggingBlock.inputPoints.Count > 0)
                 {
                     BlockConnector draggingInput = draggingBlock.inputPoints[0];
+                    Vector2 aOutputPos = previousOutput.GetWorldPosition();
+                    Vector2 cInputPos = draggingInput.GetWorldPosition();
+                    Vector2 offsetForC = aOutputPos - cInputPos;
+
+                    RectTransform cRect = draggingBlock.GetComponent<RectTransform>();
+                    if (cRect != null)
+                    {
+                        cRect.position = new Vector3(
+                            cRect.position.x + offsetForC.x,
+                            cRect.position.y + offsetForC.y,
+                            cRect.position.z
+                        );
+                    }
+
+                    // Step 2: Reconnect A → C
                     previousOutput.connectedTo = draggingInput;
                     Debug.Log($"[RECONNECT] {previousOutput.parentBlock.gameObject.name} → {draggingBlock.gameObject.name}");
                 }
 
-                // Calculate shift distance: height of dragging block + padding
-                RectTransform draggingRect = draggingBlock.GetComponent<RectTransform>();
-                if (draggingRect != null)
+                // Step 3: Position targetBlock (B) so its INPUT aligns with draggingBlock's OUTPUT (C's OUTPUT)
+                BlockUI targetBlock = targetInput.parentBlock;
+                Vector2 cOutputPos = outputPoint.GetWorldPosition();
+                Vector2 bInputPos = targetInput.GetWorldPosition();
+                Vector2 offsetForB = cOutputPos - bInputPos;
+
+                RectTransform bRect = targetBlock.GetComponent<RectTransform>();
+                if (bRect != null)
                 {
-                    float blockHeight = draggingRect.rect.height;
+                    bRect.position = new Vector3(
+                        bRect.position.x + offsetForB.x,
+                        bRect.position.y + offsetForB.y,
+                        bRect.position.z
+                    );
+                }
+
+                // Step 4: Shift all remaining blocks after B (D, E, F...)
+                RectTransform cRectForHeight = draggingBlock.GetComponent<RectTransform>();
+                if (cRectForHeight != null)
+                {
+                    float blockHeight = cRectForHeight.rect.height;
                     float padding = 10f;  // Small padding between blocks
                     float shiftDistance = blockHeight + padding;
 
-                    // Shift all blocks in the chain starting from target block
-                    BlockUI targetBlock = targetInput.parentBlock;
-                    ShiftBlockChain(targetBlock, shiftDistance);
+                    // Shift blocks starting from B's next block
+                    BlockUI nextBlock = targetBlock.GetNextBlock();
+                    ShiftBlockChain(nextBlock, shiftDistance);
+                }
+
+                Debug.Log($"[DISCONNECT FOR INSERT] {previousOutput.parentBlock.gameObject.name} → {targetBlock.gameObject.name}");
+            }
+            else
+            {
+                // APPEND AT END: A → C (no previous block in chain)
+                // Position draggingBlock so its INPUT aligns with targetInput (A's OUTPUT)
+                if (draggingBlock.inputPoints.Count > 0)
+                {
+                    BlockConnector draggingInput = draggingBlock.inputPoints[0];
+                    Vector2 targetPosition = targetInput.GetWorldPosition();
+                    Vector2 currentInputWorldPos = draggingInput.GetWorldPosition();
+                    Vector2 offset = targetPosition - currentInputWorldPos;
+
+                    RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
+                    if (blockRect != null)
+                    {
+                        blockRect.position = new Vector3(
+                            blockRect.position.x + offset.x,
+                            blockRect.position.y + offset.y,
+                            blockRect.position.z
+                        );
+                    }
                 }
             }
 
