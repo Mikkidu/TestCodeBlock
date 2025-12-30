@@ -75,12 +75,20 @@
 - Detailed plan: [.Doc/Tasks/10a_SnapToBeginning.md](Tasks/10a_SnapToBeginning.md)
 
 ## #10b Снап в середину цепи
-- Status: [→] In Progress (тестирование)
+- Status: [→] Testing (исправления реализованы, ожидание верификации)
 - Description: Реализовать вставку блока в середину цепи (между двумя блоками) с правильным переконектированием соединений
 - Progress:
   - ✓ FindConnectedOutput() - добавлен для поиска входящих соединений
   - ✓ ApplySnapToInput() обновлена для переконектирования при вставке в середину
-  - [ ] Тестирование всех сценариев
+  - ✓ Исправлены все 3 критических бага:
+    - ✓ #10b-1: cf8703f - Добавлена проверка inProgramArea в OnEndDrag
+    - ✓ #10b-2: aa46156 - Удален дублированный ReturnToOriginalPosition
+    - ✓ #10b-3: cf8703f + aa46156 - Разделение ответственности палитра/программа
+- Bugs Fixed:
+  - ✓ #10b-3: Палитровые блоки теперь копируются, не переносятся
+  - ✓ #10b-2: Визуальный snap применяется для всех типов соединений
+  - ✓ #10b-1: Блоки в конце цепи выполняются один раз
+- Test Plan: [.Doc/BugFix_10b_TestPlan.md](BugFix_10b_TestPlan.md)
 - Detailed plan: [.Doc/Tasks/10b_SnapToMiddle.md](Tasks/10b_SnapToMiddle.md)
 
 ## #11 Блок цикла
