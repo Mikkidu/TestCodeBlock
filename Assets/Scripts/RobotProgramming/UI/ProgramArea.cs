@@ -93,11 +93,11 @@ namespace RobotProgramming.UI
                     {
                         SnapManager.SnapInfo snapInfo = snapManager.FindNearestOutput(newBlock, blocksInProgram);
 
-                        if (snapInfo.canSnap && snapInfo.targetOutput != null)
+                        if (snapInfo.canSnap && snapInfo.targetConnector != null)
                         {
                             // Apply snap to align and connect
-                            snapManager.ApplySnap(newBlock, newBlock.inputPoints[0], snapInfo.targetOutput);
-                            Debug.Log($"[SNAP APPLIED] {newBlock.gameObject.name} → {snapInfo.targetBlock.gameObject.name}");
+                            snapManager.ApplySnap(newBlock, newBlock.inputPoints[0], snapInfo.targetConnector);
+                            Debug.Log($"[SNAP APPLIED INPUT→OUTPUT] {snapInfo.targetBlock.gameObject.name} → {newBlock.gameObject.name}");
                         }
                         // If snap not possible, block stays at drop position
                     }

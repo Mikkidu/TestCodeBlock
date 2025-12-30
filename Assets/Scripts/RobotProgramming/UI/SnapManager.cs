@@ -14,8 +14,11 @@ namespace RobotProgramming.UI
 
         public struct SnapInfo
         {
+            public enum SnapType { None, OutputToInput, InputToOutput }
+
             public BlockUI targetBlock;
-            public BlockConnector targetOutput;
+            public BlockConnector targetConnector;
+            public SnapType snapType;
             public bool canSnap;
             public float distance;
         }
@@ -28,7 +31,8 @@ namespace RobotProgramming.UI
                 return new SnapInfo
                 {
                     targetBlock = null,
-                    targetOutput = null,
+                    targetConnector = null,
+                    snapType = SnapInfo.SnapType.None,
                     canSnap = false,
                     distance = float.MaxValue
                 };
@@ -40,7 +44,8 @@ namespace RobotProgramming.UI
                 return new SnapInfo
                 {
                     targetBlock = null,
-                    targetOutput = null,
+                    targetConnector = null,
+                    snapType = SnapInfo.SnapType.None,
                     canSnap = false,
                     distance = float.MaxValue
                 };
@@ -83,7 +88,8 @@ namespace RobotProgramming.UI
             return new SnapInfo
             {
                 targetBlock = targetBlock,
-                targetOutput = nearestOutput,
+                targetConnector = nearestOutput,
+                snapType = canSnap ? SnapInfo.SnapType.InputToOutput : SnapInfo.SnapType.None,
                 canSnap = canSnap,
                 distance = minDistance
             };
@@ -120,7 +126,7 @@ namespace RobotProgramming.UI
             // Create physical connection between blocks (Stage 6)
             targetOutput.connectedTo = inputPoint;
             OnSnap?.Invoke(draggingBlock.Command);
-            Debug.Log($"[CONNECTION] {targetOutput.parentBlock.gameObject.name} → {inputPoint.parentBlock.gameObject.name}");
+            Debug.Log($"[CONNECTION INPUT→OUTPUT] {targetOutput.parentBlock.gameObject.name} → {draggingBlock.gameObject.name}");
         }
 
         // Get the snap distance for UI feedback
