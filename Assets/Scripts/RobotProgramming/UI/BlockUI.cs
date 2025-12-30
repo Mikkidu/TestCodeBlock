@@ -353,8 +353,8 @@ namespace RobotProgramming.UI
                         }
                     }
 
-                    // No snap possible, block stays at current position
-                    // (Don't return to original - block is being repositioned within program)
+                    // No snap possible, return block to original position in ProgramArea
+                    ReturnToOriginalPosition();
                 }
             }
         }
