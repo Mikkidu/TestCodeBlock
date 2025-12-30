@@ -279,13 +279,25 @@ namespace RobotProgramming.UI
                 Vector2 offsetForB = cOutputPos - bInputPos;
 
                 RectTransform bRect = targetBlock.GetComponent<RectTransform>();
+                Vector3 oldBPos = Vector3.zero;
                 if (bRect != null)
                 {
+                    // Save old position to calculate actual shift
+                    oldBPos = bRect.position;
+
                     bRect.position = new Vector3(
                         bRect.position.x + offsetForB.x,
                         bRect.position.y + offsetForB.y,
                         bRect.position.z
                     );
+
+                    // Step 4: Shift all blocks after B (C, D, E...) by the actual Y displacement of B
+                    float actualYShift = bRect.position.y - oldBPos.y;
+                    if (Mathf.Abs(actualYShift) > 0.1f)  // Only shift if there's meaningful movement
+                    {
+                        BlockUI nextBlock = targetBlock.GetNextBlock();
+                        ShiftBlockChain(nextBlock, actualYShift);
+                    }
                 }
 
                 Debug.Log($"[DISCONNECT FOR INSERT] {previousOutput.parentBlock.gameObject.name} → {targetBlock.gameObject.name}");
