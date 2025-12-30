@@ -10,7 +10,6 @@ namespace RobotProgramming.UI
 {
     public class ProgramArea : MonoBehaviour, IDropHandler
     {
-        [SerializeField] private float snapDistance = 10f;
         [SerializeField] private Canvas canvas;
         [SerializeField] private BlockFactory blockFactory;
 
@@ -18,6 +17,7 @@ namespace RobotProgramming.UI
         private List<BlockUI> blocksInProgram = new List<BlockUI>();
         private RectTransform rectTransform;
         private CanvasScaler scaler;
+        private SnapManager snapManager;
 
         private void Awake()
         {
@@ -34,6 +34,8 @@ namespace RobotProgramming.UI
 
             scaler = canvas.GetComponent<CanvasScaler>();
 
+            snapManager = gameObject.AddComponent<SnapManager>();
+
             programSequence = new ProgramSequence();
 
             gameObject.tag = "DropZone";
@@ -47,22 +49,42 @@ namespace RobotProgramming.UI
                 return;
             }
 
+            // If block is already in program, don't process drop
+            if (droppedBlock.inProgramArea)
+                return;
+
             if (blockFactory == null)
             {
                 Debug.LogError("ProgramArea: BlockFactory not assigned!");
                 return;
             }
 
-            // Запрашиваем фабрику создать блок с той же командой
+            // Create new block from the dragged palette block
             CommandType commandType = droppedBlock.Command.Type;
             BlockUI newBlock = blockFactory.CreateBlock(commandType, transform);
 
             if (newBlock != null)
             {
-                // Добавляем новый блок в программу
+                // Position the new block at the drop point
+                RectTransform newBlockRect = newBlock.GetComponent<RectTransform>();
+                RectTransform programAreaRect = GetComponent<RectTransform>();
+
+                if (newBlockRect != null && programAreaRect != null)
+                {
+                    // Convert world position to local position within ProgramArea
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        programAreaRect,
+                        eventData.position,
+                        eventData.pressEventCamera,
+                        out Vector2 localPoint);
+
+                    newBlockRect.anchoredPosition = localPoint;
+                }
+
+                // Add the new block to the program
                 AddBlockToProgram(newBlock);
 
-                // Возвращаем оригинал в палитру
+                // Return the original block to the palette
                 droppedBlock.ReturnToOriginalPosition();
             }
         }
@@ -74,6 +96,8 @@ namespace RobotProgramming.UI
             // Add to sequence
             programSequence.AddCommand(command);
             blocksInProgram.Add(blockUI);
+            
+            blockUI.inProgramArea = true;
 
             // Link with previous block
             if (blocksInProgram.Count > 1)
@@ -128,6 +152,11 @@ namespace RobotProgramming.UI
         public List<BlockUI> GetBlocks()
         {
             return new List<BlockUI>(blocksInProgram);
+        }
+
+        public SnapManager GetSnapManager()
+        {
+            return snapManager;
         }
     }
 }

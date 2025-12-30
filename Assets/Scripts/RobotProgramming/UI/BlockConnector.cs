@@ -21,13 +21,18 @@ namespace RobotProgramming.UI
             visualElement = visual;
         }
 
-        // Get world position of this connection point
+        // Get world/screen position of this connection point
         public Vector2 GetWorldPosition()
         {
             if (visualElement == null)
                 return Vector2.zero;
 
-            return visualElement.position;
+            // Get the screen position of the visual element's center
+            Vector3[] corners = new Vector3[4];
+            visualElement.GetWorldCorners(corners);
+
+            // Return the center position in screen space
+            return (Vector2)((corners[0] + corners[2]) / 2f);
         }
 
         // Check if this connector can connect to another (for future parameter validation)
