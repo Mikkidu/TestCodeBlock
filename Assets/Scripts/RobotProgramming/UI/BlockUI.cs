@@ -241,9 +241,16 @@ namespace RobotProgramming.UI
             }
 
             // Find nearest snap point for visual feedback (only in program area)
-            if (programArea != null && programArea.GetBlocks().Count > 0)
+            // If programArea is null (dragging from palette), try to find it in rootCanvas
+            ProgramArea snapArea = programArea;
+            if (snapArea == null && rootCanvas != null)
             {
-                SnapManager snapManager = programArea.GetSnapManager();
+                snapArea = rootCanvas.GetComponentInChildren<ProgramArea>();
+            }
+
+            if (snapArea != null && snapArea.GetBlocks().Count > 0)
+            {
+                SnapManager snapManager = snapArea.GetSnapManager();
                 if (snapManager != null)
                 {
                     SnapManager.SnapInfo snapInfo = new SnapManager.SnapInfo { canSnap = false };
@@ -251,13 +258,13 @@ namespace RobotProgramming.UI
                     // Priority 1: Check OUTPUT → INPUT snap
                     if (outputPoints.Count > 0)
                     {
-                        snapInfo = snapManager.FindNearestInput(this, programArea.GetBlocks());
+                        snapInfo = snapManager.FindNearestInput(this, snapArea.GetBlocks());
                     }
 
                     // Priority 2: Check INPUT → OUTPUT snap
                     if (!snapInfo.canSnap && inputPoints.Count > 0)
                     {
-                        snapInfo = snapManager.FindNearestOutput(this, programArea.GetBlocks());
+                        snapInfo = snapManager.FindNearestOutput(this, snapArea.GetBlocks());
                     }
 
                     // Update visual feedback (yellow highlight when ready)
@@ -296,9 +303,16 @@ namespace RobotProgramming.UI
             ResetConnectorColors();
 
             // Check if we can apply snap
-            if (programArea != null && programArea.GetBlocks().Count > 0)
+            // If programArea is null (dragging from palette), try to find it in rootCanvas
+            ProgramArea snapArea = programArea;
+            if (snapArea == null && rootCanvas != null)
             {
-                SnapManager snapManager = programArea.GetSnapManager();
+                snapArea = rootCanvas.GetComponentInChildren<ProgramArea>();
+            }
+
+            if (snapArea != null && snapArea.GetBlocks().Count > 0)
+            {
+                SnapManager snapManager = snapArea.GetSnapManager();
                 if (snapManager != null)
                 {
                     SnapManager.SnapInfo snapInfo = new SnapManager.SnapInfo { canSnap = false };
@@ -306,7 +320,7 @@ namespace RobotProgramming.UI
                     // Priority 1: Try OUTPUT → INPUT snap (insert at beginning)
                     if (outputPoints.Count > 0)
                     {
-                        snapInfo = snapManager.FindNearestInput(this, programArea.GetBlocks());
+                        snapInfo = snapManager.FindNearestInput(this, snapArea.GetBlocks());
 
                         if (snapInfo.canSnap && snapInfo.targetConnector != null)
                         {
@@ -320,7 +334,7 @@ namespace RobotProgramming.UI
                     // Priority 2: Try INPUT → OUTPUT snap (append at end)
                     if (!snapInfo.canSnap && inputPoints.Count > 0)
                     {
-                        snapInfo = snapManager.FindNearestOutput(this, programArea.GetBlocks());
+                        snapInfo = snapManager.FindNearestOutput(this, snapArea.GetBlocks());
 
                         if (snapInfo.canSnap && snapInfo.targetConnector != null)
                         {
