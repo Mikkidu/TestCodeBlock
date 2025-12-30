@@ -121,9 +121,6 @@ namespace RobotProgramming.UI
                         // If snap not possible, block stays at drop position
                     }
                 }
-
-                // Return the original block to the palette
-                droppedBlock.ReturnToOriginalPosition();
             }
         }
 
