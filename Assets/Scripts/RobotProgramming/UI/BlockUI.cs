@@ -72,43 +72,69 @@ namespace RobotProgramming.UI
 
         private void UpdateSnapVisuals(SnapManager.SnapInfo snapInfo)
         {
-            if (snapInfo.canSnap && snapInfo.targetOutput != null)
+            if (snapInfo.canSnap && snapInfo.targetConnector != null)
             {
-                // Reset previously highlighted output if different
-                if (previousHighlightedOutput != null && previousHighlightedOutput != snapInfo.targetOutput)
+                // Reset previously highlighted connector if different
+                if (previousHighlightedOutput != null && previousHighlightedOutput != snapInfo.targetConnector)
                 {
-                    Image prevOutputImage = previousHighlightedOutput.visualElement.GetComponent<Image>();
-                    if (prevOutputImage != null)
+                    Image prevImage = previousHighlightedOutput.visualElement.GetComponent<Image>();
+                    if (prevImage != null)
                     {
-                        prevOutputImage.color = new Color(1f, 0f, 0f, 1f); // Red
+                        // Reset to default color based on type
+                        prevImage.color = previousHighlightedOutput.pointType == BlockConnector.PointType.Input
+                            ? new Color(0f, 1f, 0f, 1f)  // Green for input
+                            : new Color(1f, 0f, 0f, 1f); // Red for output
                     }
                 }
 
-                // Highlight input point with yellow
-                if (inputPoints.Count > 0 && inputPoints[0]?.visualElement?.GetComponent<Image>() != null)
+                // Highlight based on snap type
+                if (snapInfo.snapType == SnapManager.SnapInfo.SnapType.OutputToInput)
                 {
-                    inputPoints[0].visualElement.GetComponent<Image>().color = new Color(1f, 1f, 0f, 1f); // Yellow
-                }
+                    // Highlight OUTPUT of dragging block (yellow)
+                    if (outputPoints.Count > 0 && outputPoints[0]?.visualElement?.GetComponent<Image>() != null)
+                    {
+                        outputPoints[0].visualElement.GetComponent<Image>().color = new Color(1f, 1f, 0f, 1f);
+                    }
 
-                // Highlight target output point with yellow
-                Image targetOutputImage = snapInfo.targetOutput.visualElement.GetComponent<Image>();
-                if (targetOutputImage != null)
+                    // Highlight target INPUT (yellow)
+                    Image targetImage = snapInfo.targetConnector.visualElement.GetComponent<Image>();
+                    if (targetImage != null)
+                    {
+                        targetImage.color = new Color(1f, 1f, 0f, 1f);
+                    }
+
+                    previousHighlightedOutput = snapInfo.targetConnector;
+                }
+                else if (snapInfo.snapType == SnapManager.SnapInfo.SnapType.InputToOutput)
                 {
-                    targetOutputImage.color = new Color(1f, 1f, 0f, 1f); // Yellow
-                }
+                    // Highlight INPUT of dragging block (yellow)
+                    if (inputPoints.Count > 0 && inputPoints[0]?.visualElement?.GetComponent<Image>() != null)
+                    {
+                        inputPoints[0].visualElement.GetComponent<Image>().color = new Color(1f, 1f, 0f, 1f);
+                    }
 
-                // Remember this output for cleanup
-                previousHighlightedOutput = snapInfo.targetOutput;
+                    // Highlight target OUTPUT (yellow)
+                    Image targetImage = snapInfo.targetConnector.visualElement.GetComponent<Image>();
+                    if (targetImage != null)
+                    {
+                        targetImage.color = new Color(1f, 1f, 0f, 1f);
+                    }
+
+                    previousHighlightedOutput = snapInfo.targetConnector;
+                }
             }
             else
             {
-                // Reset previously highlighted output when snap is no longer possible
+                // Reset previously highlighted connector when snap is no longer possible
                 if (previousHighlightedOutput != null)
                 {
-                    Image prevOutputImage = previousHighlightedOutput.visualElement.GetComponent<Image>();
-                    if (prevOutputImage != null)
+                    Image prevImage = previousHighlightedOutput.visualElement.GetComponent<Image>();
+                    if (prevImage != null)
                     {
-                        prevOutputImage.color = new Color(1f, 0f, 0f, 1f); // Red
+                        // Reset to default color based on type
+                        prevImage.color = previousHighlightedOutput.pointType == BlockConnector.PointType.Input
+                            ? new Color(0f, 1f, 0f, 1f)  // Green for input
+                            : new Color(1f, 0f, 0f, 1f); // Red for output
                     }
                     previousHighlightedOutput = null;
                 }
