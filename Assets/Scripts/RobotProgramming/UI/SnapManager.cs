@@ -268,12 +268,53 @@ namespace RobotProgramming.UI
                     previousOutput.connectedTo = draggingInput;
                     Debug.Log($"[RECONNECT] {previousOutput.parentBlock.gameObject.name} → {draggingBlock.gameObject.name}");
                 }
+
+                // Calculate shift distance: height of dragging block + padding
+                RectTransform draggingRect = draggingBlock.GetComponent<RectTransform>();
+                if (draggingRect != null)
+                {
+                    float blockHeight = draggingRect.rect.height;
+                    float padding = 10f;  // Small padding between blocks
+                    float shiftDistance = blockHeight + padding;
+
+                    // Shift all blocks in the chain starting from target block
+                    BlockUI targetBlock = targetInput.parentBlock;
+                    ShiftBlockChain(targetBlock, shiftDistance);
+                }
             }
 
             // Create physical connection: dragging block's OUTPUT → target INPUT
             outputPoint.connectedTo = targetInput;
             OnSnap?.Invoke(draggingBlock.Command);
             Debug.Log($"[CONNECTION OUTPUT→INPUT] {draggingBlock.gameObject.name} → {targetInput.parentBlock.gameObject.name}");
+        }
+
+        // Shift all blocks in chain starting from targetBlock down by offsetY
+        // Used when inserting a block in the middle to prevent overlapping
+        private void ShiftBlockChain(BlockUI targetBlock, float offsetY)
+        {
+            if (targetBlock == null || Mathf.Abs(offsetY) < 0.1f)
+            {
+                return;  // No shift needed
+            }
+
+            BlockUI currentBlock = targetBlock;
+            while (currentBlock != null)
+            {
+                RectTransform blockRect = currentBlock.GetComponent<RectTransform>();
+                if (blockRect != null)
+                {
+                    // Shift this block down by offsetY
+                    blockRect.anchoredPosition = new Vector2(
+                        blockRect.anchoredPosition.x,
+                        blockRect.anchoredPosition.y - offsetY  // Negative because Y axis is inverted in UI
+                    );
+                    Debug.Log($"[SHIFT] {currentBlock.gameObject.name} shifted by {offsetY}px down");
+                }
+
+                // Move to next block in chain
+                currentBlock = currentBlock.GetNextBlock();
+            }
         }
 
         // Get the snap distance for UI feedback
