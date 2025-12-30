@@ -302,7 +302,15 @@ namespace RobotProgramming.UI
             // Reset connector colors to normal
             ResetConnectorColors();
 
-            // Check if we can apply snap
+            // Palette blocks should NOT apply snap in OnEndDrag
+            // They are handled by ProgramArea.OnDrop() which creates a copy
+            if (!inProgramArea)
+            {
+                ReturnToOriginalPosition();
+                return;
+            }
+
+            // Check if we can apply snap (ONLY for blocks already in program)
             // If programArea is null (dragging from palette), try to find it in rootCanvas
             ProgramArea snapArea = programArea;
             if (snapArea == null && rootCanvas != null)
@@ -310,7 +318,7 @@ namespace RobotProgramming.UI
                 snapArea = rootCanvas.GetComponentInChildren<ProgramArea>();
             }
 
-            if (snapArea != null && snapArea.GetBlocks().Count > 0)
+            if (snapArea != null)
             {
                 SnapManager snapManager = snapArea.GetSnapManager();
                 if (snapManager != null)
@@ -345,18 +353,9 @@ namespace RobotProgramming.UI
                         }
                     }
 
-                    // No snap possible, return to original position
-                    ReturnToOriginalPosition();
+                    // No snap possible, block stays at current position
+                    // (Don't return to original - block is being repositioned within program)
                 }
-                else
-                {
-                    ReturnToOriginalPosition();
-                }
-            }
-            else
-            {
-                // No program area or blocks, return to original
-                ReturnToOriginalPosition();
             }
         }
 
