@@ -279,24 +279,20 @@ namespace RobotProgramming.UI
                 Vector2 offsetForB = cOutputPos - bInputPos;
 
                 RectTransform bRect = targetBlock.GetComponent<RectTransform>();
-                Vector3 oldBPos = Vector3.zero;
                 if (bRect != null)
                 {
-                    // Save old position to calculate actual shift
-                    oldBPos = bRect.position;
-
                     bRect.position = new Vector3(
                         bRect.position.x + offsetForB.x,
                         bRect.position.y + offsetForB.y,
                         bRect.position.z
                     );
 
-                    // Step 4: Shift all blocks after B (C, D, E...) by the actual Y displacement of B
-                    float actualYShift = bRect.position.y - oldBPos.y;
-                    if (Mathf.Abs(actualYShift) > 0.1f)  // Only shift if there's meaningful movement
+                    // Step 4: Trigger cascade alignment for all blocks after B (C, D, E...)
+                    // Each block aligns to its input connection and propagates to next
+                    BlockUI nextBlock = targetBlock.GetNextBlock();
+                    if (nextBlock != null)
                     {
-                        BlockUI nextBlock = targetBlock.GetNextBlock();
-                        ShiftBlockChain(nextBlock, actualYShift);
+                        nextBlock.AlignToInputConnection();
                     }
                 }
 
