@@ -167,6 +167,26 @@ namespace RobotProgramming.UI
             };
         }
 
+        // Find which output connector is connected to the given input (Stage 6b - mid-chain insertion)
+        private BlockConnector FindConnectedOutput(BlockConnector targetInput, List<BlockUI> allBlocks)
+        {
+            if (targetInput == null) return null;
+
+            // Search through all blocks to find which OUTPUT is connected to this INPUT
+            foreach (BlockUI block in allBlocks)
+            {
+                foreach (BlockConnector output in block.outputPoints)
+                {
+                    if (output.connectedTo == targetInput)
+                    {
+                        return output;  // Found the source output
+                    }
+                }
+            }
+
+            return null;  // No incoming connection
+        }
+
         // Apply snap to position the dragging block with input aligned to target output
         public void ApplySnap(BlockUI draggingBlock, BlockConnector inputPoint, BlockConnector targetOutput)
         {
@@ -229,8 +249,28 @@ namespace RobotProgramming.UI
                 );
             }
 
-            // Create physical connection between blocks (Stage 6)
-            // Connection direction: dragging block's OUTPUT → target block's INPUT
+            // Stage 6b: Handle insertion into middle of chain
+            // Check if there's already an OUTPUT connected to targetInput
+            BlockConnector previousOutput = FindConnectedOutput(targetInput,
+                draggingBlock.GetComponentInParent<ProgramArea>()?.GetBlocks() ?? new List<BlockUI>());
+
+            if (previousOutput != null)
+            {
+                // INSERTION INTO MIDDLE:
+                // Disconnect previous connection: previousOutput → targetInput
+                previousOutput.connectedTo = null;
+                Debug.Log($"[DISCONNECT FOR INSERT] {previousOutput.parentBlock.gameObject.name} → {targetInput.parentBlock.gameObject.name}");
+
+                // Reconnect previous to dragging block's INPUT
+                if (draggingBlock.inputPoints.Count > 0)
+                {
+                    BlockConnector draggingInput = draggingBlock.inputPoints[0];
+                    previousOutput.connectedTo = draggingInput;
+                    Debug.Log($"[RECONNECT] {previousOutput.parentBlock.gameObject.name} → {draggingBlock.gameObject.name}");
+                }
+            }
+
+            // Create physical connection: dragging block's OUTPUT → target INPUT
             outputPoint.connectedTo = targetInput;
             OnSnap?.Invoke(draggingBlock.Command);
             Debug.Log($"[CONNECTION OUTPUT→INPUT] {draggingBlock.gameObject.name} → {targetInput.parentBlock.gameObject.name}");
