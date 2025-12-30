@@ -75,9 +75,12 @@
 - Detailed plan: [.Doc/Tasks/10a_SnapToBeginning.md](Tasks/10a_SnapToBeginning.md)
 
 ## #10b Снап в середину цепи
-- Status: Pending
+- Status: [→] In Progress (тестирование)
 - Description: Реализовать вставку блока в середину цепи (между двумя блоками) с правильным переконектированием соединений
-- Blockers: #10a (нужна сначала вставка в начало)
+- Progress:
+  - ✓ FindConnectedOutput() - добавлен для поиска входящих соединений
+  - ✓ ApplySnapToInput() обновлена для переконектирования при вставке в середину
+  - [ ] Тестирование всех сценариев
 - Detailed plan: [.Doc/Tasks/10b_SnapToMiddle.md](Tasks/10b_SnapToMiddle.md)
 
 ## #11 Блок цикла
