@@ -95,6 +95,78 @@ namespace RobotProgramming.UI
             };
         }
 
+        // Find the nearest input point to the output point of a dragging block
+        public SnapInfo FindNearestInput(BlockUI draggingBlock, List<BlockUI> allBlocks)
+        {
+            if (draggingBlock == null || draggingBlock.outputPoints.Count == 0)
+            {
+                return new SnapInfo
+                {
+                    targetBlock = null,
+                    targetConnector = null,
+                    snapType = SnapInfo.SnapType.None,
+                    canSnap = false,
+                    distance = float.MaxValue
+                };
+            }
+
+            BlockConnector outputPoint = draggingBlock.outputPoints[0];
+            if (outputPoint == null)
+            {
+                return new SnapInfo
+                {
+                    targetBlock = null,
+                    targetConnector = null,
+                    snapType = SnapInfo.SnapType.None,
+                    canSnap = false,
+                    distance = float.MaxValue
+                };
+            }
+
+            Vector2 outputPosition = outputPoint.GetWorldPosition();
+            float minDistance = float.MaxValue;
+            BlockConnector nearestInput = null;
+            BlockUI targetBlock = null;
+
+            // Search through all blocks in the program
+            foreach (BlockUI block in allBlocks)
+            {
+                // Skip the dragging block itself
+                if (block == draggingBlock)
+                    continue;
+
+                // Check all input points of this block
+                foreach (BlockConnector input in block.inputPoints)
+                {
+                    if (input == null)
+                        continue;
+
+                    Vector2 inputPosition = input.GetWorldPosition();
+                    float distance = Vector2.Distance(outputPosition, inputPosition);
+
+                    // Keep track of the nearest input
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        nearestInput = input;
+                        targetBlock = block;
+                    }
+                }
+            }
+
+            // Check if snap is valid (within snapDistance)
+            bool canSnap = minDistance <= snapDistance && nearestInput != null;
+
+            return new SnapInfo
+            {
+                targetBlock = targetBlock,
+                targetConnector = nearestInput,
+                snapType = canSnap ? SnapInfo.SnapType.OutputToInput : SnapInfo.SnapType.None,
+                canSnap = canSnap,
+                distance = minDistance
+            };
+        }
+
         // Apply snap to position the dragging block with input aligned to target output
         public void ApplySnap(BlockUI draggingBlock, BlockConnector inputPoint, BlockConnector targetOutput)
         {
