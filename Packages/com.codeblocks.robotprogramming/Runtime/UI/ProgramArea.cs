@@ -44,8 +44,7 @@ namespace CodeBlocks.UI
             snapManager.OnSnap += programSequence.CheckSnappedCommand;
             gameObject.tag = "DropZone";
             
-            SnapLineRenderer = gameObject.GetComponent<SnapLineRenderer>()
-                ?? canvas.GetComponent<SnapLineRenderer>();
+            SnapLineRenderer = gameObject.GetComponentInParent<SnapLineRenderer>();
         }
 
         public void OnDrop(PointerEventData eventData)

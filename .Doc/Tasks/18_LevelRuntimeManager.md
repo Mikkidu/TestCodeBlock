@@ -115,8 +115,9 @@ public Vector2Int GetGridPosition(Vector3 worldPos)
 
 **Измеримый результат:**
 - ClearLevel() удаляет предыдущий уровень
-- Создаётся контейнер "LevelRuntime"
+- Создаётся контейнер "LevelRuntime" в мировом центре координат (0,0,0)
 - currentLevel сохраняется
+- levelOrigin вычисляется так, чтобы сетка была центрирована в (0,0,0)
 
 **Код:**
 ```csharp
@@ -132,15 +133,17 @@ public void LoadLevel(LevelGridData levelData)
 
     currentLevel = levelData;
 
-    // Create container
+    // Calculate level origin to center the grid at world origin (0,0,0)
+    // For a grid of size W×H, the grid spans from levelOrigin to levelOrigin + (W*cellSize, H*cellSize)
+    // To center it at (0,0): levelOrigin = (-W*cellSize/2, 0, -H*cellSize/2)
+    float gridWidth = currentLevel.gridWidth * cellSize;
+    float gridHeight = currentLevel.gridHeight * cellSize;
+    levelOrigin = new Vector3(-gridWidth * 0.5f, 0, -gridHeight * 0.5f);
+
+    // Create container at world origin - all objects will be positioned relative to (0,0,0)
     levelContainer = new GameObject("LevelRuntime");
     levelContainer.transform.SetParent(transform);
-    levelContainer.transform.position = levelOrigin;
-
-    // Calculate level center for proper origin
-    float centerX = (currentLevel.gridWidth - 1) * cellSize * 0.5f;
-    float centerZ = (currentLevel.gridHeight - 1) * cellSize * 0.5f;
-    levelOrigin = new Vector3(-centerX, 0, -centerZ); // Center level at (0,0,0)
+    levelContainer.transform.position = Vector3.zero; // Always at world center!
 
     // Load components in next steps...
 }
@@ -371,12 +374,12 @@ private void OnDrawGizmos()
 {
     if (currentLevel == null) return;
 
-    // Draw grid bounds
+    float gridWidth = currentLevel.gridWidth * cellSize;
+    float gridHeight = currentLevel.gridHeight * cellSize;
+
+    // Draw grid bounds (centered at world origin)
     Gizmos.color = Color.cyan;
-    float width = currentLevel.gridWidth * cellSize;
-    float height = currentLevel.gridHeight * cellSize;
-    Vector3 center = levelOrigin + new Vector3(width * 0.5f, 0, height * 0.5f);
-    Gizmos.DrawWireCube(center, new Vector3(width, 0.1f, height));
+    Gizmos.DrawWireCube(Vector3.zero, new Vector3(gridWidth, 0.1f, gridHeight));
 
     // Draw grid lines
     Gizmos.color = new Color(1, 1, 1, 0.2f);
@@ -393,25 +396,37 @@ private void OnDrawGizmos()
         Gizmos.DrawLine(start, end);
     }
 
-    // Draw start point
+    // Draw start point (green sphere + arrow pointing in direction)
     if (currentLevel.start != null)
     {
         Gizmos.color = Color.green;
-        Vector3 startPos = GetWorldPosition(currentLevel.start.position);
-        startPos.x += cellSize * 0.5f;
-        startPos.z += cellSize * 0.5f;
+        Vector3 startPos = GetWorldPosition(currentLevel.start.position) + new Vector3(cellSize * 0.5f, 0, cellSize * 0.5f);
         Gizmos.DrawWireSphere(startPos, 0.3f);
+
+        // Draw direction arrow
+        Vector3 direction = currentLevel.start.direction switch
+        {
+            CardinalDirection.North => Vector3.forward,
+            CardinalDirection.East => Vector3.right,
+            CardinalDirection.South => Vector3.back,
+            CardinalDirection.West => Vector3.left,
+            _ => Vector3.forward
+        };
+        Gizmos.DrawLine(startPos, startPos + direction * 0.5f);
     }
 
-    // Draw finish point
+    // Draw finish point (yellow sphere)
     if (currentLevel.finish != null)
     {
         Gizmos.color = Color.yellow;
-        Vector3 finishPos = GetWorldPosition(currentLevel.finish.position);
-        finishPos.x += cellSize * 0.5f;
-        finishPos.z += cellSize * 0.5f;
+        Vector3 finishPos = GetWorldPosition(currentLevel.finish.position) + new Vector3(cellSize * 0.5f, 0, cellSize * 0.5f);
         Gizmos.DrawWireSphere(finishPos, 0.3f);
     }
+
+    // Draw world origin (white)
+    Gizmos.color = Color.white;
+    Gizmos.DrawLine(Vector3.zero - Vector3.right * 0.3f, Vector3.zero + Vector3.right * 0.3f);
+    Gizmos.DrawLine(Vector3.zero - Vector3.forward * 0.3f, Vector3.zero + Vector3.forward * 0.3f);
 }
 ```
 
@@ -494,22 +509,68 @@ public class LevelRuntimeManagerTest : MonoBehaviour
 **Risks:**
 1. **Префабы не найдены в Resources:**
    - Решение: Warning в Console, fallback на примитивы (Cube/Cylinder)
-2. **Координатное смещение:**
-   - Решение: Debug Gizmos для визуальной проверки
-3. **Центрирование уровня:**
-   - Решение: Вычислять levelOrigin динамически в LoadLevel()
+2. **Уровень смещён от мирового центра (0,0,0):**
+   - ❌ ОШИБКА: Если levelContainer позиционирован в старом levelOrigin → всё смещено
+   - ✅ РЕШЕНИЕ: levelContainer ВСЕГДА в Vector3.zero, levelOrigin только для расчётов
+3. **Y-координата неправильная:**
+   - ❌ ОШИБКА: Если Y всегда 0, а камера снизу → видно нечего
+   - ✅ РЕШЕНИЕ: Все terrain/objects на Y=0, start/finish визуалы выше (Y=0.1, Y=0.25)
+4. **Start стрелка очень далеко:**
+   - ❌ ОШИБКА: Если не добавить offset 0.5*cellSize к центру клетки
+   - ✅ РЕШЕНИЕ: Всегда добавлять (cellSize*0.5, 0, cellSize*0.5) к worldPos для центра
 
 ---
 
 ## Notes
 
-### Координатная система
+### Координатная система (ИСПРАВЛЕННАЯ)
+
+**Принципы:**
+- Уровень ВСЕГДА центрирован в мировом центре координат (0, 0, 0)
+- levelOrigin вычисляется так, чтобы сетка была центрирована
+- levelContainer позиционирован в Vector3.zero (мировой центр)
+- Робот спаунится в стартовой позиции, рассчитанной от (0, 0, 0)
+
+**Формулы:**
 ```
-Grid → World:
-  (x, y) → (x * cellSize, 0, y * cellSize) + levelOrigin
+levelOrigin = (-gridWidth * cellSize * 0.5f, 0, -gridHeight * cellSize * 0.5f)
+
+Grid → World (угол клетки):
+  (x, y) → levelOrigin + (x * cellSize, 0, y * cellSize)
+
+Grid → World (центр клетки):
+  (x, y) → levelOrigin + (x * cellSize + 0.5*cellSize, 0, y * cellSize + 0.5*cellSize)
+  или:
+  (x, y) → levelOrigin + ((x + 0.5) * cellSize, 0, (y + 0.5) * cellSize)
 
 World → Grid:
-  (x, y, z) → (Floor((x - originX) / cellSize), Floor((z - originZ) / cellSize))
+  (x, y, z) → (Floor((x - levelOrigin.x) / cellSize), Floor((z - levelOrigin.z) / cellSize))
+```
+
+**Пример для сетки 5×5 (cellSize = 1.0):**
+```
+levelOrigin = (-2.5, 0, -2.5)
+
+Grid (0, 0) угол:    (-2.5, 0, -2.5)
+Grid (0, 0) центр:   (-2.0, 0, -2.0)
+Grid (2, 2) центр:   (0.0, 0, 0.0)   ← центр сетки, центр мира
+Grid (4, 4) центр:   (2.0, 0, 2.0)
+
+Границы сетки: от (-2.5, 0, -2.5) до (2.5, 0, 2.5)
+```
+
+### Robot Positioning (для задачи #19)
+```
+Robot должен спавниться в центре стартовой клетки:
+1. startPos (grid) = currentLevel.start.position
+2. worldPos = GetWorldPosition(startPos) + (0.5*cellSize, 0, 0.5*cellSize)
+3. robot.transform.position = worldPos
+4. robot.direction = currentLevel.start.direction
+
+Пример для 5×5 сетки, стартовая позиция (2, 2):
+- Grid центр: (2, 2)
+- World центр: (0.0, 0, 0.0)
+- Robot.position: (0.0, 0.5, 0.0) ← примерно в центре сетки, на высоте робота
 ```
 
 ### Resources структура

@@ -249,7 +249,7 @@ namespace CodeBlocks.Managers
             // Center robot in the cell
             worldPos.x += levelRuntimeManager.CellSize * 0.5f;
             worldPos.z += levelRuntimeManager.CellSize * 0.5f;
-            worldPos.y = robotController.transform.position.y; // Preserve height
+            worldPos.y = 0;
 
             // Convert direction to rotation
             Quaternion worldRot = CardinalDirectionToRotation(level.start.direction);

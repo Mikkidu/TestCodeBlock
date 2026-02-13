@@ -5,6 +5,26 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-01-23
+
+### Fixed
+- **LevelRuntimeManager coordinate system** (#18)
+  - Level grid now properly centered at world origin (0, 0, 0)
+  - levelContainer positioned at Vector3.zero (world center) instead of levelOrigin
+  - levelOrigin calculated correctly: `(-gridWidth/2, 0, -gridHeight/2)` for centering
+  - All terrain, objects, and markers positioned relative to world center
+  - Background positioned at (0, -0.1, 0) below level center
+
+### Changed
+- Gizmos visualization now shows grid bounds centered at world origin
+- Start point direction arrow drawn in correct direction
+- White cross indicator added to mark world origin in Scene View
+
+### Improved
+- Robot spawn positioning (#19 preparation)
+  - Robot will correctly position at start point center relative to world origin
+  - Grid-to-world coordinate conversion more reliable for runtime operations
+
 ## [1.0.4] - 2026-01-23
 
 ### Added

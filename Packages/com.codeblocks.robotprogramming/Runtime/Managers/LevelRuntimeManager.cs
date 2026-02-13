@@ -38,15 +38,17 @@ namespace CodeBlocks.Managers
 
             currentLevel = levelData;
 
-            // Create container
+            // Calculate level origin to center the grid at world origin (0,0,0)
+            // For a grid of size W×H, the grid spans from levelOrigin to levelOrigin + (W*cellSize, H*cellSize)
+            // To center it at (0,0): levelOrigin = (-W*cellSize/2, 0, -H*cellSize/2)
+            float gridWidth = currentLevel.gridWidth * cellSize;
+            float gridHeight = currentLevel.gridHeight * cellSize;
+            levelOrigin = new Vector3(-gridWidth * 0.5f, 0, -gridHeight * 0.5f);
+
+            // Create container at world origin - all objects will be positioned relative to (0,0,0)
             levelContainer = new GameObject("LevelRuntime");
             levelContainer.transform.SetParent(transform);
-            levelContainer.transform.position = levelOrigin;
-
-            // Calculate level center for proper origin
-            float centerX = (currentLevel.gridWidth - 1) * cellSize * 0.5f;
-            float centerZ = (currentLevel.gridHeight - 1) * cellSize * 0.5f;
-            levelOrigin = new Vector3(-centerX, 0, -centerZ); // Center level at (0,0,0)
+            levelContainer.transform.position = Vector3.zero; // Always at world center!
 
             // Load components in next steps...
             
@@ -230,12 +232,12 @@ namespace CodeBlocks.Managers
         {
             if (currentLevel == null) return;
 
-            // Draw grid bounds
+            float gridWidth = currentLevel.gridWidth * cellSize;
+            float gridHeight = currentLevel.gridHeight * cellSize;
+
+            // Draw grid bounds (centered at world origin)
             Gizmos.color = Color.cyan;
-            float width = currentLevel.gridWidth * cellSize;
-            float height = currentLevel.gridHeight * cellSize;
-            Vector3 center = levelOrigin + new Vector3(width * 0.5f, 0, height * 0.5f);
-            Gizmos.DrawWireCube(center, new Vector3(width, 0.1f, height));
+            Gizmos.DrawWireCube(Vector3.zero, new Vector3(gridWidth, 0.1f, gridHeight));
 
             // Draw grid lines
             Gizmos.color = new Color(1, 1, 1, 0.2f);
@@ -252,25 +254,37 @@ namespace CodeBlocks.Managers
                 Gizmos.DrawLine(start, end);
             }
 
-            // Draw start point
+            // Draw start point (green sphere + arrow pointing in direction)
             if (currentLevel.start != null)
             {
                 Gizmos.color = Color.green;
-                Vector3 startPos = GetWorldPosition(currentLevel.start.position);
-                startPos.x += cellSize * 0.5f;
-                startPos.z += cellSize * 0.5f;
+                Vector3 startPos = GetWorldPosition(currentLevel.start.position) + new Vector3(cellSize * 0.5f, 0, cellSize * 0.5f);
                 Gizmos.DrawWireSphere(startPos, 0.3f);
+
+                // Draw direction arrow
+                Vector3 direction = currentLevel.start.direction switch
+                {
+                    CardinalDirection.North => Vector3.forward,
+                    CardinalDirection.East => Vector3.right,
+                    CardinalDirection.South => Vector3.back,
+                    CardinalDirection.West => Vector3.left,
+                    _ => Vector3.forward
+                };
+                Gizmos.DrawLine(startPos, startPos + direction * 0.5f);
             }
 
-            // Draw finish point
+            // Draw finish point (yellow sphere)
             if (currentLevel.finish != null)
             {
                 Gizmos.color = Color.yellow;
-                Vector3 finishPos = GetWorldPosition(currentLevel.finish.position);
-                finishPos.x += cellSize * 0.5f;
-                finishPos.z += cellSize * 0.5f;
+                Vector3 finishPos = GetWorldPosition(currentLevel.finish.position) + new Vector3(cellSize * 0.5f, 0, cellSize * 0.5f);
                 Gizmos.DrawWireSphere(finishPos, 0.3f);
             }
+
+            // Draw world origin (white cross)
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(Vector3.zero - Vector3.right * 0.3f, Vector3.zero + Vector3.right * 0.3f);
+            Gizmos.DrawLine(Vector3.zero - Vector3.forward * 0.3f, Vector3.zero + Vector3.forward * 0.3f);
         }
     }
 }

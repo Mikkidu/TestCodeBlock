@@ -47,7 +47,7 @@ public class PrefabGenerator
         cube.name = "Visual";
         cube.transform.SetParent(prefab.transform);
         cube.transform.localPosition = Vector3.zero;
-        cube.transform.localScale = new Vector3(1, 0.2f, 1);
+        cube.transform.position = new Vector3(1, 0.2f, 1);
 
         // Remove collider from the visual cube
         Collider collider = cube.GetComponent<Collider>();
@@ -91,7 +91,7 @@ public class PrefabGenerator
         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
         cube.name = "Visual";
         cube.transform.SetParent(prefab.transform);
-        cube.transform.localPosition = new Vector3(0, 0.5f, 0);
+        cube.transform.position = new Vector3(0, 0.5f, 0);
         cube.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
 
         // Remove collider from the visual cube
