@@ -98,9 +98,11 @@ namespace CodeBlocks.Robot
 
                 Debug.Log($"GridPositionTracker: Moved from {lastGridPosition} to {currentGridPosition}");
 
+                // Check if reached finish point (NEW: unified access)
                 if (currentLevel != null && !hasReachedFinish)
                 {
-                    if (currentLevel.finish != null && currentLevel.finish.position == currentGridPosition)
+                    var finishObj = currentLevel.GetFinishPoint();
+                    if (finishObj != null && finishObj.position == currentGridPosition)
                     {
                         hasReachedFinish = true;
                         OnReachedFinish?.Invoke();

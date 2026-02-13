@@ -150,20 +150,23 @@ public class LevelJsonData
             });
         }
 
-        // Convert start point
-        if (gridData.start != null)
+        // NEW: Convert start point from unified objects array
+        var startObj = gridData.GetStartPoint();
+        if (startObj != null)
         {
+            string direction = gridData.GetStartDirection().ToString();
             jsonData.start = new StartPoint(
-                Vector2Int.FromUnityVector2Int(gridData.start.position),
-                gridData.start.direction.ToString()
+                Vector2Int.FromUnityVector2Int(startObj.position),
+                direction
             );
         }
 
-        // Convert finish point
-        if (gridData.finish != null)
+        // NEW: Convert finish point from unified objects array
+        var finishObj = gridData.GetFinishPoint();
+        if (finishObj != null)
         {
             jsonData.finish = new FinishPoint(
-                Vector2Int.FromUnityVector2Int(gridData.finish.position)
+                Vector2Int.FromUnityVector2Int(finishObj.position)
             );
         }
 
@@ -206,26 +209,33 @@ public class LevelJsonData
                 objectInstanceId = jsonObj.objectInstanceId
             });
         }
-        gridData.objects = objectsList.ToArray();
 
-        // Convert start point
+        // NEW: Convert start point as unified GridObject
         if (this.start != null)
         {
-            gridData.start = new global::StartPoint
+            var startGridObj = new global::GridObject
             {
+                objectTypeId = "StartPoint",
                 position = this.start.position.ToUnityVector2Int(),
-                direction = (CardinalDirection)System.Enum.Parse(typeof(CardinalDirection), this.start.direction)
+                objectInstanceId = $"start_{gridData.levelId}"
             };
+            startGridObj.AddParameter("direction", this.start.direction);
+            objectsList.Add(startGridObj);
         }
 
-        // Convert finish point
+        // NEW: Convert finish point as unified GridObject
         if (this.finish != null)
         {
-            gridData.finish = new global::FinishPoint
+            var finishGridObj = new global::GridObject
             {
-                position = this.finish.position.ToUnityVector2Int()
+                objectTypeId = "FinishPoint",
+                position = this.finish.position.ToUnityVector2Int(),
+                objectInstanceId = $"finish_{gridData.levelId}"
             };
+            objectsList.Add(finishGridObj);
         }
+
+        gridData.objects = objectsList.ToArray();
 
         return gridData;
     }

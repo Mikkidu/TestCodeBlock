@@ -51,18 +51,24 @@ public class TutorialLevelGenerator
             };
         }
 
-        // Set start point
-        level.start = new StartPoint
+        // NEW: Add start point as GridObject
+        var startObj1 = new GridObject
         {
             position = new Vector2Int(0, 0),
-            direction = CardinalDirection.East
+            objectTypeId = "StartPoint",
+            objectInstanceId = "start_tutorial_01"
         };
+        startObj1.AddParameter("direction", CardinalDirection.East.ToString());
+        ArrayUtility.Add(ref level.objects, startObj1);
 
-        // Set finish point
-        level.finish = new FinishPoint
+        // NEW: Add finish point as GridObject
+        var finishObj1 = new GridObject
         {
-            position = new Vector2Int(7, 0)
+            position = new Vector2Int(7, 0),
+            objectTypeId = "FinishPoint",
+            objectInstanceId = "finish_tutorial_01"
         };
+        ArrayUtility.Add(ref level.objects, finishObj1);
 
         SaveLevel(level, "tutorial_01_move_forward.asset");
     }
@@ -102,18 +108,24 @@ public class TutorialLevelGenerator
 
         level.terrain = terrainList.ToArray();
 
-        // Set start point
-        level.start = new StartPoint
+        // NEW: Add start point as GridObject
+        var startObj2 = new GridObject
         {
             position = new Vector2Int(0, 0),
-            direction = CardinalDirection.East
+            objectTypeId = "StartPoint",
+            objectInstanceId = "start_tutorial_02"
         };
+        startObj2.AddParameter("direction", CardinalDirection.East.ToString());
+        ArrayUtility.Add(ref level.objects, startObj2);
 
-        // Set finish point
-        level.finish = new FinishPoint
+        // NEW: Add finish point as GridObject
+        var finishObj2 = new GridObject
         {
-            position = new Vector2Int(5, 3)
+            position = new Vector2Int(5, 3),
+            objectTypeId = "FinishPoint",
+            objectInstanceId = "finish_tutorial_02"
         };
+        ArrayUtility.Add(ref level.objects, finishObj2);
 
         SaveLevel(level, "tutorial_02_turn_and_move.asset");
     }
@@ -181,20 +193,26 @@ public class TutorialLevelGenerator
             }
         }
 
-        level.objects = objectsList.ToArray();
-
-        // Set start point
-        level.start = new StartPoint
+        // NEW: Add start point as GridObject
+        var startObj3 = new GridObject
         {
             position = new Vector2Int(0, 0),
-            direction = CardinalDirection.East
+            objectTypeId = "StartPoint",
+            objectInstanceId = "start_tutorial_03"
         };
+        startObj3.AddParameter("direction", CardinalDirection.East.ToString());
+        objectsList.Add(startObj3);
 
-        // Set finish point
-        level.finish = new FinishPoint
+        // NEW: Add finish point as GridObject
+        var finishObj3 = new GridObject
         {
-            position = new Vector2Int(7, 7)
+            position = new Vector2Int(7, 7),
+            objectTypeId = "FinishPoint",
+            objectInstanceId = "finish_tutorial_03"
         };
+        objectsList.Add(finishObj3);
+
+        level.objects = objectsList.ToArray();
 
         SaveLevel(level, "tutorial_03_avoid_obstacles.asset");
     }
@@ -249,20 +267,26 @@ public class TutorialLevelGenerator
             objectInstanceId = "door_001"
         });
 
-        level.objects = objectsList.ToArray();
-
-        // Set start point
-        level.start = new StartPoint
+        // NEW: Add start point as GridObject
+        var startObj4 = new GridObject
         {
             position = new Vector2Int(0, 2),
-            direction = CardinalDirection.East
+            objectTypeId = "StartPoint",
+            objectInstanceId = "start_tutorial_04"
         };
+        startObj4.AddParameter("direction", CardinalDirection.East.ToString());
+        objectsList.Add(startObj4);
 
-        // Set finish point
-        level.finish = new FinishPoint
+        // NEW: Add finish point as GridObject
+        var finishObj4 = new GridObject
         {
-            position = new Vector2Int(7, 2)
+            position = new Vector2Int(7, 2),
+            objectTypeId = "FinishPoint",
+            objectInstanceId = "finish_tutorial_04"
         };
+        objectsList.Add(finishObj4);
+
+        level.objects = objectsList.ToArray();
 
         SaveLevel(level, "tutorial_04_buttons_doors.asset");
     }
@@ -337,20 +361,26 @@ public class TutorialLevelGenerator
             }
         }
 
-        level.objects = objectsList.ToArray();
-
-        // Set start point
-        level.start = new StartPoint
+        // NEW: Add start point as GridObject
+        var startObj5 = new GridObject
         {
             position = new Vector2Int(0, 0),
-            direction = CardinalDirection.East
+            objectTypeId = "StartPoint",
+            objectInstanceId = "start_tutorial_05"
         };
+        startObj5.AddParameter("direction", CardinalDirection.East.ToString());
+        objectsList.Add(startObj5);
 
-        // Set finish point
-        level.finish = new FinishPoint
+        // NEW: Add finish point as GridObject
+        var finishObj5 = new GridObject
         {
-            position = new Vector2Int(9, 9)
+            position = new Vector2Int(9, 9),
+            objectTypeId = "FinishPoint",
+            objectInstanceId = "finish_tutorial_05"
         };
+        objectsList.Add(finishObj5);
+
+        level.objects = objectsList.ToArray();
 
         SaveLevel(level, "tutorial_05_complex_maze.asset");
     }

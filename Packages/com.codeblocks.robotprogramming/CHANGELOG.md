@@ -5,6 +5,101 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - TBD (Planned)
+
+### Removed (BREAKING CHANGES)
+⚠️ **This release contains breaking changes. Migrate using v1.0.8 Migration Tool first.**
+
+- `LevelGridData.start` field (deprecated in v1.0.8)
+- `LevelGridData.finish` field (deprecated in v1.0.8)
+
+### Migration Required
+Before updating to v1.1.0:
+1. Ensure you are on v1.0.8
+2. Run: Tools → CodeBlocks → Migrate Levels (Start-Finish)
+3. Update all custom code using `level.start`/`level.finish` to use `GetStartPoint()`/`GetFinishPoint()`
+4. Test thoroughly on v1.0.8 before updating to v1.1.0
+
+---
+
+## [1.0.8] - 2026-01-28
+
+### Changed
+- **StartPoint/FinishPoint unified architecture** (#25 preparation)
+  - StartPoint and FinishPoint are now regular objects in `objects[]` array
+  - objectTypeId: "StartPoint" and "FinishPoint"
+  - StartPoint direction stored in `parameters["direction"]` as string
+  - All markers instantiated through unified `InstantiateObject()` method
+  - Consistent architecture: all level objects use same spawning pipeline
+
+### Added
+- **GridObject parameter serialization**
+  - `Parameter` class for Unity Inspector serialization
+  - `parametersList` serialized field with Dictionary runtime accessor
+  - `AddParameter(key, value)` helper method for fluent API
+  - Automatic lazy initialization from serialized list
+- **LevelGridData unified API**
+  - `GetStartPoint()` - returns StartPoint as GridObject
+  - `GetFinishPoint()` - returns FinishPoint as GridObject
+  - `GetStartDirection()` - extracts direction from StartPoint parameters
+- **Migration tool** (#25 Phase 4)
+  - Menu: Tools → CodeBlocks → Migrate Levels (Start/Finish)
+  - Converts legacy start/finish fields to objects[] array
+  - Automatic duplicate detection and skipping
+  - Progress bar and detailed migration summary
+- **Public API for external control** (#25 FEATURE-1)
+  - `GameManager.StartProgram()` - start program execution from external code
+  - `GameManager.StopProgram()` - stop program execution from external code
+  - `GameManager.ClearProgram()` - clear all blocks from program area
+  - `GameManager.IsProgramRunning` - check if program is currently running
+  - `GameManager.GetBlocksCount()` - get number of blocks in program area
+  - Integration-ready for play-united MiniGameManager
+
+### Deprecated (will be removed in v1.1.0)
+- `LevelGridData.start` field (use `GetStartPoint()` or run Migration Tool)
+- `LevelGridData.finish` field (use `GetFinishPoint()` or run Migration Tool)
+- Note: Fields kept for backward compatibility and Migration Tool
+
+### Removed (internal only, no breaking changes)
+- `LevelRuntimeManager.InstantiateStartVisual()` (internal method, replaced by `InstantiateObject()`)
+- `LevelRuntimeManager.InstantiateFinishVisual()` (internal method, replaced by `InstantiateObject()`)
+
+### Fixed
+- **Start/Finish marker duplication bug** (#25 BUG-1)
+  - Fallback CreatePrimitive now correctly sets parent to levelContainer
+  - All markers properly cleaned up via levelContainer.Destroy()
+  - No marker accumulation on multiple InitLevel() calls
+- **Background positioning** (#25 BUG-2)
+  - Background now correctly parented to levelContainer
+  - Centered properly regardless of window size
+  - Consistent positioning across different screen resolutions
+- **Reset button now stops program** (#25)
+  - `OnResetButtonClicked()` now correctly calls `OnStopButtonClicked()` if program is running
+  - Removed duplicate Stop logic (DRY principle)
+  - Simplified from 30 lines to 16 lines
+
+### Migration Guide
+**For existing projects (before v1.1.0):**
+1. Update to v1.0.8 (this version)
+2. Run migration tool: Tools → CodeBlocks → Migrate Levels (Start-Finish)
+3. Migration automatically moves start/finish data to objects[] array
+4. Update any custom code using `level.start`/`level.finish`:
+   - Replace `level.start.position` with `level.GetStartPoint().position`
+   - Replace `level.start.direction` with `level.GetStartDirection()`
+   - Replace `level.finish.position` with `level.GetFinishPoint().position`
+5. Test your project - backward compatibility maintained in v1.0.8
+6. ⚠️ **IMPORTANT:** In v1.1.0, `start`/`finish` fields will be removed (breaking change)
+
+**Benefits:**
+- Unified object spawning (no special cases)
+- No marker duplication bugs
+- Easier to extend (add new object types like Trap, Key, Portal)
+- Consistent level data structure
+
+**Timeline:**
+- v1.0.8 (current): Deprecated fields, backward compatible, Migration Tool available
+- v1.1.0 (next): Fields removed, must migrate before updating
+
 ## [1.0.7] - 2026-01-27
 
 ### Added

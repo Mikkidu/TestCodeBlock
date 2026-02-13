@@ -43,10 +43,20 @@ MonoBehaviour:
     terrainType: Ground
   - position: {x: 5, y: 3}
     terrainType: Ground
-  objects: []
+  objects:
+  - position: {x: 0, y: 0}
+    objectTypeId: StartPoint
+    objectInstanceId: start_tutorial_02_turn_and_move
+    parametersList:
+    - key: direction
+      value: East
+  - position: {x: 5, y: 3}
+    objectTypeId: FinishPoint
+    objectInstanceId: finish_tutorial_02_turn_and_move
+    parametersList: []
   start:
     position: {x: 0, y: 0}
-    direction: 1
+    direction: 0
   finish:
-    position: {x: 5, y: 3}
+    position: {x: 0, y: 0}
   visualLayerId: 1

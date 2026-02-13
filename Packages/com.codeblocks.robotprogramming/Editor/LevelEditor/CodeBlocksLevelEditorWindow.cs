@@ -316,10 +316,14 @@ public class CodeBlocksLevelEditorWindow : EditorWindow
                     };
                 }
 
-                if (currentLevel.start != null && currentLevel.start.position == new Vector2Int(x, y))
+                // NEW: Check start point from unified objects array
+                var startObj = currentLevel.GetStartPoint();
+                if (startObj != null && startObj.position == new Vector2Int(x, y))
                     cellColor = Color.blue;
 
-                if (currentLevel.finish != null && currentLevel.finish.position == new Vector2Int(x, y))
+                // NEW: Check finish point from unified objects array
+                var finishObj = currentLevel.GetFinishPoint();
+                if (finishObj != null && finishObj.position == new Vector2Int(x, y))
                     cellColor = Color.cyan;
 
                 GUI.backgroundColor = cellColor;
@@ -463,9 +467,7 @@ public class CodeBlocksLevelEditorWindow : EditorWindow
         currentLevel.gridWidth = importedLevel.gridWidth;
         currentLevel.gridHeight = importedLevel.gridHeight;
         currentLevel.terrain = importedLevel.terrain;
-        currentLevel.objects = importedLevel.objects;
-        currentLevel.start = importedLevel.start;
-        currentLevel.finish = importedLevel.finish;
+        currentLevel.objects = importedLevel.objects; // NEW: Includes StartPoint/FinishPoint
 
         // Mark dirty and save
         EditorUtility.SetDirty(currentLevel);

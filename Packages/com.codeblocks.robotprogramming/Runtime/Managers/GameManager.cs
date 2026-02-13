@@ -275,22 +275,25 @@ namespace CodeBlocks.Managers
                 return;
             }
 
-            if (level.start == null)
+            // NEW: Unified start point access
+            var startObj = level.GetStartPoint();
+            if (startObj == null)
             {
                 Debug.LogWarning($"GameManager: Level '{level.levelName}' has no start point!");
                 return;
             }
 
             // Convert grid position to world position
-            Vector3 worldPos = levelRuntimeManager.GetWorldPosition(level.start.position);
+            Vector3 worldPos = levelRuntimeManager.GetWorldPosition(startObj.position);
 
             // Center robot in the cell
             worldPos.x += levelRuntimeManager.CellSize * 0.5f;
             worldPos.z += levelRuntimeManager.CellSize * 0.5f;
             worldPos.y = 0;
 
-            // Convert direction to rotation
-            Quaternion worldRot = CardinalDirectionToRotation(level.start.direction);
+            // Convert direction to rotation (NEW: use GetStartDirection)
+            CardinalDirection direction = level.GetStartDirection();
+            Quaternion worldRot = CardinalDirectionToRotation(direction);
 
             // Update robot's start position
             robotController.SetStartPosition(worldPos, worldRot);
@@ -298,7 +301,7 @@ namespace CodeBlocks.Managers
             // Apply immediately (teleport robot)
             robotController.Reset();
 
-            Debug.Log($"GameManager: Robot positioned at grid {level.start.position}, world {worldPos}, direction {level.start.direction}");
+            Debug.Log($"GameManager: Robot positioned at grid {startObj.position}, world {worldPos}, direction {direction}");
         }
         
         private Quaternion CardinalDirectionToRotation(CardinalDirection dir)
@@ -314,34 +317,66 @@ namespace CodeBlocks.Managers
             return Quaternion.Euler(0, angle, 0);
         }
 
+        // =========================
+        // PUBLIC API for external control
+        // =========================
+
+        /// <summary>
+        /// Starts program execution from external code. Equivalent to clicking Run button.
+        /// </summary>
+        public void StartProgram()
+        {
+            OnRunButtonClicked();
+        }
+
+        /// <summary>
+        /// Stops program execution from external code. Equivalent to clicking Stop button.
+        /// </summary>
+        public void StopProgram()
+        {
+            OnStopButtonClicked();
+        }
+
+        /// <summary>
+        /// Clears all blocks from program area. Equivalent to clicking Clear button.
+        /// Automatically stops running program if any.
+        /// </summary>
+        public void ClearProgram()
+        {
+            OnClearButtonClicked();
+        }
+
+        /// <summary>
+        /// Returns true if program is currently running.
+        /// </summary>
+        public bool IsProgramRunning => isProgramRunning;
+
+        /// <summary>
+        /// Returns number of blocks currently in program area.
+        /// </summary>
+        public int GetBlocksCount()
+        {
+            return programArea?.GetBlocks().Count ?? 0;
+        }
+
         private void OnResetButtonClicked()
         {
-            if (programArea != null)
+            // Stop program if running (reuses OnStopButtonClicked logic)
+            if (isProgramRunning)
             {
-                List<BlockUIBase> blocks = programArea.GetBlocks();
-                foreach (var block in blocks)
-                {
-                    if (block.Command is Commands.LoopCommand loopCmd)
-                    {
-                        loopCmd.RequestStop();
-                    }
-                }
-            }
-            
-            if (commandExecutor != null)
-            {
-                commandExecutor.Stop();
+                OnStopButtonClicked();
             }
 
+            // Reset robot to start position
             if (robotController != null)
             {
                 robotController.Reset();
             }
 
+            // Reset position tracker
             robotPositionTracker?.ResetPosition();
 
-            isProgramRunning = false;
-            currentExecutingCommand = null;
+            // Update UI
             UpdateStatusDisplay("Reset completed");
         }
 

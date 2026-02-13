@@ -73,15 +73,28 @@ MonoBehaviour:
   - position: {x: 2, y: 0}
     objectTypeId: Button
     objectInstanceId: Button_5074
+    parametersList: []
   - position: {x: 3, y: 0}
     objectTypeId: Button
     objectInstanceId: Button_9637
+    parametersList: []
   - position: {x: 1, y: 0}
     objectTypeId: Button
     objectInstanceId: Button_3508
+    parametersList: []
+  - position: {x: 0, y: 0}
+    objectTypeId: StartPoint
+    objectInstanceId: start_test_001
+    parametersList:
+    - key: direction
+      value: East
+  - position: {x: 1, y: 2}
+    objectTypeId: FinishPoint
+    objectInstanceId: finish_test_001
+    parametersList: []
   start:
     position: {x: 0, y: 0}
-    direction: 1
+    direction: 0
   finish:
-    position: {x: 1, y: 2}
+    position: {x: 0, y: 0}
   visualLayerId: 1

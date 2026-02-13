@@ -233,90 +233,128 @@ MonoBehaviour:
   - position: {x: 3, y: 1}
     objectTypeId: Wall
     objectInstanceId: wall_v1_1
+    parametersList: []
   - position: {x: 6, y: 1}
     objectTypeId: Wall
     objectInstanceId: wall_v2_1
+    parametersList: []
   - position: {x: 3, y: 2}
     objectTypeId: Wall
     objectInstanceId: wall_v1_2
+    parametersList: []
   - position: {x: 6, y: 2}
     objectTypeId: Wall
     objectInstanceId: wall_v2_2
+    parametersList: []
   - position: {x: 3, y: 3}
     objectTypeId: Wall
     objectInstanceId: wall_v1_3
+    parametersList: []
   - position: {x: 6, y: 3}
     objectTypeId: Wall
     objectInstanceId: wall_v2_3
+    parametersList: []
   - position: {x: 3, y: 4}
     objectTypeId: Wall
     objectInstanceId: wall_v1_4
+    parametersList: []
   - position: {x: 6, y: 4}
     objectTypeId: Wall
     objectInstanceId: wall_v2_4
+    parametersList: []
   - position: {x: 3, y: 5}
     objectTypeId: Wall
     objectInstanceId: wall_v1_5
+    parametersList: []
   - position: {x: 6, y: 5}
     objectTypeId: Wall
     objectInstanceId: wall_v2_5
+    parametersList: []
   - position: {x: 3, y: 6}
     objectTypeId: Wall
     objectInstanceId: wall_v1_6
+    parametersList: []
   - position: {x: 6, y: 6}
     objectTypeId: Wall
     objectInstanceId: wall_v2_6
+    parametersList: []
   - position: {x: 3, y: 7}
     objectTypeId: Wall
     objectInstanceId: wall_v1_7
+    parametersList: []
   - position: {x: 6, y: 7}
     objectTypeId: Wall
     objectInstanceId: wall_v2_7
+    parametersList: []
   - position: {x: 3, y: 8}
     objectTypeId: Wall
     objectInstanceId: wall_v1_8
+    parametersList: []
   - position: {x: 6, y: 8}
     objectTypeId: Wall
     objectInstanceId: wall_v2_8
+    parametersList: []
   - position: {x: 1, y: 4}
     objectTypeId: Wall
     objectInstanceId: wall_h1_1
+    parametersList: []
   - position: {x: 1, y: 7}
     objectTypeId: Wall
     objectInstanceId: wall_h2_1
+    parametersList: []
   - position: {x: 2, y: 4}
     objectTypeId: Wall
     objectInstanceId: wall_h1_2
+    parametersList: []
   - position: {x: 2, y: 7}
     objectTypeId: Wall
     objectInstanceId: wall_h2_2
+    parametersList: []
   - position: {x: 4, y: 4}
     objectTypeId: Wall
     objectInstanceId: wall_h1_4
+    parametersList: []
   - position: {x: 4, y: 7}
     objectTypeId: Wall
     objectInstanceId: wall_h2_4
+    parametersList: []
   - position: {x: 5, y: 4}
     objectTypeId: Wall
     objectInstanceId: wall_h1_5
+    parametersList: []
   - position: {x: 5, y: 7}
     objectTypeId: Wall
     objectInstanceId: wall_h2_5
+    parametersList: []
   - position: {x: 7, y: 4}
     objectTypeId: Wall
     objectInstanceId: wall_h1_7
+    parametersList: []
   - position: {x: 7, y: 7}
     objectTypeId: Wall
     objectInstanceId: wall_h2_7
+    parametersList: []
   - position: {x: 8, y: 4}
     objectTypeId: Wall
     objectInstanceId: wall_h1_8
+    parametersList: []
   - position: {x: 8, y: 7}
     objectTypeId: Wall
     objectInstanceId: wall_h2_8
+    parametersList: []
+  - position: {x: 0, y: 0}
+    objectTypeId: StartPoint
+    objectInstanceId: start_tutorial_05_complex_maze
+    parametersList:
+    - key: direction
+      value: East
+  - position: {x: 9, y: 9}
+    objectTypeId: FinishPoint
+    objectInstanceId: finish_tutorial_05_complex_maze
+    parametersList: []
   start:
     position: {x: 0, y: 0}
-    direction: 1
+    direction: 0
   finish:
-    position: {x: 9, y: 9}
+    position: {x: 0, y: 0}
   visualLayerId: 1

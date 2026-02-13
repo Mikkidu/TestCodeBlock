@@ -115,24 +115,40 @@ MonoBehaviour:
   - position: {x: 3, y: 2}
     objectTypeId: Wall
     objectInstanceId: wall_3_2
+    parametersList: []
   - position: {x: 3, y: 3}
     objectTypeId: Wall
     objectInstanceId: wall_3_3
+    parametersList: []
   - position: {x: 3, y: 5}
     objectTypeId: Wall
     objectInstanceId: wall_3_5
+    parametersList: []
   - position: {x: 3, y: 6}
     objectTypeId: Wall
     objectInstanceId: wall_3_6
+    parametersList: []
   - position: {x: 4, y: 3}
     objectTypeId: Wall
     objectInstanceId: wall_4_3
+    parametersList: []
   - position: {x: 6, y: 3}
     objectTypeId: Wall
     objectInstanceId: wall_6_3
+    parametersList: []
+  - position: {x: 0, y: 0}
+    objectTypeId: StartPoint
+    objectInstanceId: start_tutorial_03_avoid_obstacles
+    parametersList:
+    - key: direction
+      value: East
+  - position: {x: 7, y: 7}
+    objectTypeId: FinishPoint
+    objectInstanceId: finish_tutorial_03_avoid_obstacles
+    parametersList: []
   start:
     position: {x: 0, y: 0}
-    direction: 1
+    direction: 0
   finish:
-    position: {x: 7, y: 7}
+    position: {x: 0, y: 0}
   visualLayerId: 1

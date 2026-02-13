@@ -621,6 +621,33 @@
   - `SnapManager.cs:303, 365` - изменить SetParent параметры с true на false
 - Detailed plan: [.Doc/Tasks/23_BlockLocalCoordinateFix.md](Tasks/23_BlockLocalCoordinateFix.md)
 
+## #25 Bugfix релиз v1.0.8 - Unified Start/Finish + Публичные методы (КРИТИЧНО ДЛЯ PLAY-UNITED)
+- Status: [✓] **Done** (2026-01-28, приоритет 🔴 CRITICAL)
+- Priority: 🔴 CRITICAL (блокирует 100% готовность месяца 2 в play-united)
+- Description: Унификация Start/Finish архитектуры + публичные API методы для управления программой + bugfixes
+- Progress:
+  - [✓] **UNIFIED REFACTOR: Start/Finish как GridObject** (завершено 2026-01-28)
+    - StartPoint и FinishPoint теперь в objects[] массиве (не отдельные поля)
+    - Создан Migration Tool для конвертации старых уровней
+    - Добавлены GetStartPoint(), GetFinishPoint(), GetStartDirection() API
+    - Обновлены все 13 файлов для использования unified API
+    - Backward compatibility через deprecated поля с fallback логикой
+    - **Detailed plan**: [.Doc/Tasks/25_Unified_StartFinish_Refactor.md](Tasks/25_Unified_StartFinish_Refactor.md)
+  - [→] **ШАГ 1: Публичные API + Stop при Reset** (в процессе 2026-01-28)
+    - **Detailed plan**: [.Doc/Tasks/25_Step1_PublicAPI_StopFixes.md](Tasks/25_Step1_PublicAPI_StopFixes.md)
+- Key Changes:
+  1. **Unified Architecture**: Start/Finish теперь обычные GridObject в objects[]
+  2. **Public API**: 5 методов для внешнего управления (StartProgram, StopProgram, ClearProgram, IsProgramRunning, GetBlocksCount)
+  3. **Stop при Reset**: OnResetButtonClicked() теперь корректно останавливает программу
+  4. **BUG fixes**: Маркеры дублирования исправлены благодаря unified архитектуре
+- Blockers: None
+- Next Steps:
+  - [ ] Реализовать публичные API методы в GameManager.cs
+  - [ ] Рефакторинг OnResetButtonClicked() для Stop
+  - [ ] Обновить CHANGELOG.md с полным списком изменений v1.0.8
+  - [ ] Протестировать все изменения
+  - [ ] Git release v1.0.8
+
 ---
 
 ## ЗАДАЧИ НА БУДУЩЕЕ (BACKLOG)

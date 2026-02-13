@@ -57,12 +57,24 @@ MonoBehaviour:
   - position: {x: 2, y: 4}
     objectTypeId: Button
     objectInstanceId: button_001
+    parametersList: []
   - position: {x: 5, y: 2}
     objectTypeId: Door
     objectInstanceId: door_001
+    parametersList: []
+  - position: {x: 0, y: 2}
+    objectTypeId: StartPoint
+    objectInstanceId: start_tutorial_04_buttons_doors
+    parametersList:
+    - key: direction
+      value: East
+  - position: {x: 7, y: 2}
+    objectTypeId: FinishPoint
+    objectInstanceId: finish_tutorial_04_buttons_doors
+    parametersList: []
   start:
-    position: {x: 0, y: 2}
-    direction: 1
+    position: {x: 0, y: 0}
+    direction: 0
   finish:
-    position: {x: 7, y: 2}
+    position: {x: 0, y: 0}
   visualLayerId: 1

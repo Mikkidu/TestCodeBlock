@@ -276,17 +276,21 @@ public class GridVisualizer : MonoBehaviour
 
     private void DrawPoints()
     {
-        if (levelData.start != null)
+        // NEW: Draw start point from unified objects array
+        var startObj = levelData.GetStartPoint();
+        if (startObj != null)
         {
             Gizmos.color = Color.blue;
-            Vector3 pos = GridToWorldPos(levelData.start.position) + new Vector3(cellSize * 0.5f, 0.5f, cellSize * 0.5f);
+            Vector3 pos = GridToWorldPos(startObj.position) + new Vector3(cellSize * 0.5f, 0.5f, cellSize * 0.5f);
             Gizmos.DrawWireCube(pos, Vector3.one * cellSize * 0.7f);
         }
 
-        if (levelData.finish != null)
+        // NEW: Draw finish point from unified objects array
+        var finishObj = levelData.GetFinishPoint();
+        if (finishObj != null)
         {
             Gizmos.color = Color.cyan;
-            Vector3 pos = GridToWorldPos(levelData.finish.position) + new Vector3(cellSize * 0.5f, 0.5f, cellSize * 0.5f);
+            Vector3 pos = GridToWorldPos(finishObj.position) + new Vector3(cellSize * 0.5f, 0.5f, cellSize * 0.5f);
             Gizmos.DrawWireCube(pos, Vector3.one * cellSize * 0.7f);
         }
     }
@@ -356,19 +360,21 @@ public class GridVisualizer : MonoBehaviour
 
     public void RemoveTerrain(Vector2Int position)
     {
-        // Check if it's Start point
-        if (levelData.start != null && levelData.start.position == position)
+        // NEW: Check if it's Start point (in objects array)
+        var startObj = levelData.GetStartPoint();
+        if (startObj != null && startObj.position == position)
         {
-            levelData.start = null;
+            ArrayUtility.Remove(ref levelData.objects, startObj);
             EditorUtility.SetDirty(levelData);
             Debug.Log($"✓ Removed Start point at {position}");
             return;
         }
 
-        // Check if it's Finish point
-        if (levelData.finish != null && levelData.finish.position == position)
+        // NEW: Check if it's Finish point (in objects array)
+        var finishObj = levelData.GetFinishPoint();
+        if (finishObj != null && finishObj.position == position)
         {
-            levelData.finish = null;
+            ArrayUtility.Remove(ref levelData.objects, finishObj);
             EditorUtility.SetDirty(levelData);
             Debug.Log($"✓ Removed Finish point at {position}");
             return;
@@ -405,26 +411,50 @@ public class GridVisualizer : MonoBehaviour
 
     public void PlaceObject(Vector2Int position, string objectTypeId)
     {
-        // Special handling for Start point
+        // NEW: Unified handling for Start point
         if (objectTypeId == "Start")
         {
-            levelData.start = new StartPoint
+            // Remove existing StartPoint if any
+            var existingStart = levelData.GetStartPoint();
+            if (existingStart != null)
+            {
+                ArrayUtility.Remove(ref levelData.objects, existingStart);
+            }
+
+            // Create new StartPoint as GridObject
+            var startObj = new GridObject
             {
                 position = position,
-                direction = CardinalDirection.North
+                objectTypeId = "StartPoint",
+                objectInstanceId = $"start_{levelData.levelId}"
             };
+            startObj.AddParameter("direction", CardinalDirection.North.ToString());
+
+            ArrayUtility.Add(ref levelData.objects, startObj);
             EditorUtility.SetDirty(levelData);
             Debug.Log($"✓ Set Start point at {position}");
             return;
         }
 
-        // Special handling for Finish point
+        // NEW: Unified handling for Finish point
         if (objectTypeId == "Finish")
         {
-            levelData.finish = new FinishPoint
+            // Remove existing FinishPoint if any
+            var existingFinish = levelData.GetFinishPoint();
+            if (existingFinish != null)
             {
-                position = position
+                ArrayUtility.Remove(ref levelData.objects, existingFinish);
+            }
+
+            // Create new FinishPoint as GridObject
+            var finishObj = new GridObject
+            {
+                position = position,
+                objectTypeId = "FinishPoint",
+                objectInstanceId = $"finish_{levelData.levelId}"
             };
+
+            ArrayUtility.Add(ref levelData.objects, finishObj);
             EditorUtility.SetDirty(levelData);
             Debug.Log($"✓ Set Finish point at {position}");
             return;

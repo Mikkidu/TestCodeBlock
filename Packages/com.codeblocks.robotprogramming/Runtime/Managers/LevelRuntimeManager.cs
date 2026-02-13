@@ -73,19 +73,20 @@ namespace CodeBlocks.Managers
             // Load objects
             foreach (var obj in currentLevel.objects)
             {
-                InstantiateObject(obj.position, obj.objectTypeId);
+                InstantiateObject(obj.position, obj.objectTypeId, obj);
             }
 
-            // Load start visual
-            if (currentLevel.start != null)
+            // NEW: Load start/finish as unified objects
+            var startObj = currentLevel.GetStartPoint();
+            if (startObj != null)
             {
-                InstantiateStartVisual(currentLevel.start.position, currentLevel.start.direction);
+                InstantiateObject(startObj.position, startObj.objectTypeId, startObj);
             }
 
-            // Load finish visual
-            if (currentLevel.finish != null)
+            var finishObj = currentLevel.GetFinishPoint();
+            if (finishObj != null)
             {
-                InstantiateFinishVisual(currentLevel.finish.position);
+                InstantiateObject(finishObj.position, finishObj.objectTypeId, finishObj);
             }
 
             Debug.Log($"LevelRuntimeManager: Level '{currentLevel.levelName}' loaded successfully!");
@@ -111,84 +112,83 @@ namespace CodeBlocks.Managers
             terrainInstances[gridPos] = instance;
         }
 
-        private void InstantiateObject(Vector2Int gridPos, string objectTypeId)
+        private void InstantiateObject(Vector2Int gridPos, string objectTypeId, GridObject gridObject = null)
         {
             GameObject prefab = Resources.Load<GameObject>($"LevelEditor/Objects/{objectTypeId}");
+            GameObject instance = null;
+
             if (prefab == null)
             {
-                Debug.LogWarning($"LevelRuntimeManager: Object prefab not found: {objectTypeId}");
-                return;
+                // Fallback: Create primitive for StartPoint/FinishPoint if prefab missing
+                if (objectTypeId == "StartPoint")
+                {
+                    instance = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    instance.transform.localScale = new Vector3(0.3f, 0.1f, 0.3f);
+                    instance.GetComponent<Renderer>().material.color = Color.green;
+                }
+                else if (objectTypeId == "FinishPoint")
+                {
+                    instance = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    instance.transform.localScale = new Vector3(0.3f, 0.5f, 0.3f);
+                    instance.GetComponent<Renderer>().material.color = Color.yellow;
+                }
+                else
+                {
+                    Debug.LogWarning($"LevelRuntimeManager: Object prefab not found: {objectTypeId}");
+                    return;
+                }
+            }
+            else
+            {
+                instance = Instantiate(prefab);
             }
 
-            GameObject instance = Instantiate(prefab, levelContainer.transform);
+            // Always set parent (fixes marker duplication bug)
+            instance.transform.SetParent(levelContainer.transform);
             instance.name = $"{objectTypeId}_{gridPos.x}_{gridPos.y}";
 
             Vector3 worldPos = GetWorldPosition(gridPos);
             worldPos.x += cellSize * 0.5f; // Center of cell
             worldPos.z += cellSize * 0.5f;
+
+            // Special Y positioning for markers
+            if (objectTypeId == "StartPoint")
+                worldPos.y = 0.1f; // Slightly above ground
+            else if (objectTypeId == "FinishPoint")
+                worldPos.y = 0.25f; // Half height above ground
+
             instance.transform.position = worldPos;
 
+            // Handle StartPoint direction rotation
+            if (objectTypeId == "StartPoint" && gridObject?.parameters != null)
+            {
+                if (gridObject.parameters.TryGetValue("direction", out string dirStr))
+                {
+                    if (System.Enum.TryParse<CardinalDirection>(dirStr, out var dir))
+                    {
+                        float angle = dir switch
+                        {
+                            CardinalDirection.North => 0f,
+                            CardinalDirection.East => 90f,
+                            CardinalDirection.South => 180f,
+                            CardinalDirection.West => 270f,
+                            _ => 0f
+                        };
+                        instance.transform.rotation = Quaternion.Euler(0, angle, 0);
+                    }
+                }
+            }
+
             objectInstances[gridPos] = instance;
-        }
-        
-        private void InstantiateStartVisual(Vector2Int gridPos, CardinalDirection direction)
-        {
-            // Try to load custom start marker prefab
-            GameObject prefab = Resources.Load<GameObject>("LevelEditor/Markers/StartPoint");
-            if (prefab == null)
-            {
-                // Fallback: Create simple arrow
-                startVisual = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                startVisual.transform.localScale = new Vector3(0.3f, 0.1f, 0.3f);
-                startVisual.GetComponent<Renderer>().material.color = Color.green;
-            }
-            else
-            {
-                startVisual = Instantiate(prefab, levelContainer.transform);
-            }
 
-            startVisual.name = "StartVisual";
-            Vector3 worldPos = GetWorldPosition(gridPos);
-            worldPos.x += cellSize * 0.5f;
-            worldPos.z += cellSize * 0.5f;
-            worldPos.y = 0.1f; // Slightly above ground
-            startVisual.transform.position = worldPos;
-
-            // Rotate based on direction
-            float angle = direction switch
-            {
-                CardinalDirection.North => 0f,
-                CardinalDirection.East => 90f,
-                CardinalDirection.South => 180f,
-                CardinalDirection.West => 270f,
-                _ => 0f
-            };
-            startVisual.transform.rotation = Quaternion.Euler(0, angle, 0);
+            // Store references for Gizmos (backward compatibility)
+            if (objectTypeId == "StartPoint")
+                startVisual = instance;
+            else if (objectTypeId == "FinishPoint")
+                finishVisual = instance;
         }
 
-        private void InstantiateFinishVisual(Vector2Int gridPos)
-        {
-            // Try to load custom finish marker prefab
-            GameObject prefab = Resources.Load<GameObject>("LevelEditor/Markers/FinishPoint");
-            if (prefab == null)
-            {
-                // Fallback: Create simple flag
-                finishVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                finishVisual.transform.localScale = new Vector3(0.3f, 0.5f, 0.3f);
-                finishVisual.GetComponent<Renderer>().material.color = Color.yellow;
-            }
-            else
-            {
-                finishVisual = Instantiate(prefab, levelContainer.transform);
-            }
-
-            finishVisual.name = "FinishVisual";
-            Vector3 worldPos = GetWorldPosition(gridPos);
-            worldPos.x += cellSize * 0.5f;
-            worldPos.z += cellSize * 0.5f;
-            worldPos.y = 0.25f; // Half height above ground
-            finishVisual.transform.position = worldPos;
-        }
+        // Legacy methods removed in v1.1.0 - use unified InstantiateObject() instead
 
         public void ClearLevel()
         {
@@ -255,15 +255,18 @@ namespace CodeBlocks.Managers
                 Gizmos.DrawLine(start, end);
             }
 
-            // Draw start point (green sphere + arrow pointing in direction)
-            if (currentLevel.start != null)
+            // NEW: Draw start point (green sphere + arrow pointing in direction)
+            var startObj = currentLevel.GetStartPoint();
+            if (startObj != null)
             {
                 Gizmos.color = Color.green;
-                Vector3 startPos = GetWorldPosition(currentLevel.start.position) + new Vector3(cellSize * 0.5f, 0, cellSize * 0.5f);
+                Vector3 startPos = GetWorldPosition(startObj.position) +
+                                   new Vector3(cellSize * 0.5f, 0, cellSize * 0.5f);
                 Gizmos.DrawWireSphere(startPos, 0.3f);
 
                 // Draw direction arrow
-                Vector3 direction = currentLevel.start.direction switch
+                CardinalDirection dir = currentLevel.GetStartDirection();
+                Vector3 direction = dir switch
                 {
                     CardinalDirection.North => Vector3.forward,
                     CardinalDirection.East => Vector3.right,
@@ -274,11 +277,13 @@ namespace CodeBlocks.Managers
                 Gizmos.DrawLine(startPos, startPos + direction * 0.5f);
             }
 
-            // Draw finish point (yellow sphere)
-            if (currentLevel.finish != null)
+            // NEW: Draw finish point (yellow sphere)
+            var finishObj = currentLevel.GetFinishPoint();
+            if (finishObj != null)
             {
                 Gizmos.color = Color.yellow;
-                Vector3 finishPos = GetWorldPosition(currentLevel.finish.position) + new Vector3(cellSize * 0.5f, 0, cellSize * 0.5f);
+                Vector3 finishPos = GetWorldPosition(finishObj.position) +
+                                    new Vector3(cellSize * 0.5f, 0, cellSize * 0.5f);
                 Gizmos.DrawWireSphere(finishPos, 0.3f);
             }
 
