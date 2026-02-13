@@ -267,6 +267,7 @@ GameObject:
   - component: {fileID: 452801678}
   - component: {fileID: 452801680}
   - component: {fileID: 452801681}
+  - component: {fileID: 452801682}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -342,6 +343,95 @@ MonoBehaviour:
   m_EditorClassIdentifier: CodeBlocks.Runtime::LevelRuntimeManagerTest
   gameManager: {fileID: 452801678}
   testLevel: {fileID: 11400000, guid: 20030a737738d054b89cc4785e129226, type: 2}
+--- !u!114 &452801682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 452801677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 191b9ae75b7b81b4a81bd2b9837d936e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManagerAPITest
+  gameManager: {fileID: 452801678}
+  autoTest: 1
+--- !u!1 &459734394
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 459734395}
+  - component: {fileID: 459734397}
+  - component: {fileID: 459734396}
+  m_Layer: 5
+  m_Name: InputPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &459734395
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459734394}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1351002068}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -169, y: 416}
+  m_SizeDelta: {x: 40, y: 40}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &459734396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459734394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: b74c31d447d2f5d41a61081bdf5e7126, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &459734397
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459734394}
+  m_CullTransparentMesh: 1
 --- !u!1 &487900262
 GameObject:
   m_ObjectHideFlags: 0
@@ -902,6 +992,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2018070571}
     - target: {fileID: 3552589166247834395, guid: d5e44fcde01b32b449e8317cc1acff46, type: 3}
+      propertyPath: inputPoint
+      value: 
+      objectReference: {fileID: 459734395}
+    - target: {fileID: 3552589166247834395, guid: d5e44fcde01b32b449e8317cc1acff46, type: 3}
       propertyPath: blockFactory
       value: 
       objectReference: {fileID: 2064283226}
@@ -1027,7 +1121,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8438265188652669877, guid: d5e44fcde01b32b449e8317cc1acff46, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 459734395}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4238408268151249746, guid: d5e44fcde01b32b449e8317cc1acff46, type: 3}
       insertIndex: -1

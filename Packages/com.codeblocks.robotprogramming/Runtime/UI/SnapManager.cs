@@ -15,13 +15,14 @@ namespace CodeBlocks.UI
 
         public struct SnapInfo
         {
-            public enum SnapType { None, OutputToInput, InputToOutput }
+            public enum SnapType { None, OutputToInput, InputToOutput, InputToInputPoint }
 
             public BlockUIBase targetBlock;
             public BlockConnector targetConnector;
             public SnapType snapType;
             public bool canSnap;
             public float distance;
+            public Vector3 inputPointPosition;  // For InputToInputPoint snap type (start of program)
         }
 
         // Find the nearest snap point by comparing INPUT→OUTPUT and OUTPUT→INPUT distances
@@ -142,14 +143,40 @@ namespace CodeBlocks.UI
                 }
             }
 
-            // STEP 3: Choose the snap type with smaller distance
+            // STEP 2b: Check distance to InputPoint (Task #26)
+            // InputPoint is the START of the program, so we check INPUT of dragging block
+            float nearestInputToInputPointDist = float.MaxValue;
+            Vector3 inputPointWorldPos = Vector3.zero;
+            bool hasInputPoint = false;
+
+            var dragInputs = draggingBlock.GetInputConnectors();
+            if (dragInputs.Any() && allBlocks.Count > 0)
+            {
+                // Try to get ProgramArea from any block in the list
+                ProgramArea programArea = allBlocks[0].GetComponentInParent<ProgramArea>();
+
+                if (programArea != null && programArea.HasInputPoint())
+                {
+                    hasInputPoint = true;
+                    inputPointWorldPos = programArea.GetInputPointWorldPosition();
+
+                    BlockConnector inputPoint = dragInputs.First();
+                    if (inputPoint != null)
+                    {
+                        Vector2 inputPosition = inputPoint.GetWorldPosition();
+                        nearestInputToInputPointDist = Vector2.Distance(inputPosition, inputPointWorldPos);
+                    }
+                }
+            }
+
+            // STEP 3: Choose the snap type with smaller distance (including InputPoint)
             // SPECIAL CASE: If INPUT→OUTPUT target has outgoing connection (INSERT MIDDLE), prefer it over OUTPUT→INPUT
             bool targetForOutputHasOutgoing = targetBlockForOutput != null && nearestOutput != null && nearestOutput.connectedTo != null;
 
             // Priority: INPUT→OUTPUT if target has outgoing connection (INSERT MIDDLE case via ApplySnap)
             if (targetForOutputHasOutgoing && nearestInputToOutputDist <= snapDistance && nearestOutput != null)
             {
-                // INSERT MIDDLE: prefer INPUT→OUTPUT (will be handled by ApplySnap) even if OUTPUT→INPUT is closer
+                // INSERT MIDDLE: prefer INPUT→OUTPUT (will be handled by ApplySnap) even if OUTPUT→INPUT or InputPoint is closer
                 return new SnapInfo
                 {
                     targetBlock = targetBlockForOutput,
@@ -159,43 +186,57 @@ namespace CodeBlocks.UI
                     distance = nearestInputToOutputDist
                 };
             }
-            // Otherwise: choose by smaller distance
-            else if (nearestInputToOutputDist < nearestOutputToInputDist)
+
+            // Find minimum distance among all three options
+            float minDist = Mathf.Min(nearestInputToOutputDist, nearestOutputToInputDist, nearestInputToInputPointDist);
+
+            // Choose snap type based on minimum distance
+            if (minDist == nearestInputToInputPointDist && hasInputPoint && nearestInputToInputPointDist <= snapDistance)
             {
-                // INPUT→OUTPUT is closer
-                bool canSnap = nearestInputToOutputDist <= snapDistance && nearestOutput != null;
+                // INPUT→InputPoint is closest (first block in program)
+                return new SnapInfo
+                {
+                    targetBlock = null,  // No target block for InputPoint
+                    targetConnector = null,  // No connector for InputPoint
+                    snapType = SnapInfo.SnapType.InputToInputPoint,
+                    canSnap = true,
+                    distance = nearestInputToInputPointDist,
+                    inputPointPosition = inputPointWorldPos
+                };
+            }
+            else if (minDist == nearestInputToOutputDist && nearestInputToOutputDist <= snapDistance && nearestOutput != null)
+            {
+                // INPUT→OUTPUT is closest
                 return new SnapInfo
                 {
                     targetBlock = targetBlockForOutput,
                     targetConnector = nearestOutput,
-                    snapType = canSnap ? SnapInfo.SnapType.InputToOutput : SnapInfo.SnapType.None,
-                    canSnap = canSnap,
+                    snapType = SnapInfo.SnapType.InputToOutput,
+                    canSnap = true,
                     distance = nearestInputToOutputDist
                 };
             }
-            else if (nearestOutputToInputDist < float.MaxValue)
+            else if (minDist == nearestOutputToInputDist && nearestOutputToInputDist <= snapDistance && nearestInput != null)
             {
-                // OUTPUT→INPUT is closer
-                bool canSnap = nearestOutputToInputDist <= snapDistance && nearestInput != null;
+                // OUTPUT→INPUT is closest
                 return new SnapInfo
                 {
                     targetBlock = targetBlockForInput,
                     targetConnector = nearestInput,
-                    snapType = canSnap ? SnapInfo.SnapType.OutputToInput : SnapInfo.SnapType.None,
-                    canSnap = canSnap,
+                    snapType = SnapInfo.SnapType.OutputToInput,
+                    canSnap = true,
                     distance = nearestOutputToInputDist
                 };
             }
-            else if (nearestInputToOutputDist < float.MaxValue)
+            else if (nearestInputToOutputDist < float.MaxValue && nearestInputToOutputDist <= snapDistance)
             {
-                // Fallback: INPUT→OUTPUT if nothing else works
-                bool canSnap = nearestInputToOutputDist <= snapDistance && nearestOutput != null;
+                // Fallback: INPUT→OUTPUT
                 return new SnapInfo
                 {
                     targetBlock = targetBlockForOutput,
                     targetConnector = nearestOutput,
-                    snapType = canSnap ? SnapInfo.SnapType.InputToOutput : SnapInfo.SnapType.None,
-                    canSnap = canSnap,
+                    snapType = SnapInfo.SnapType.InputToOutput,
+                    canSnap = true,
                     distance = nearestInputToOutputDist
                 };
             }
@@ -366,6 +407,65 @@ namespace CodeBlocks.UI
             {
                 draggingBlock.transform.SetParent(programArea.transform, true);
             }
+
+            OnSnap?.Invoke(draggingBlock.Command);
+        }
+
+        /// <summary>
+        /// Apply snap to InputPoint - positions block at the beginning of the chain.
+        /// Task #26: Magnetism to InputPoint
+        /// </summary>
+        public void ApplySnapToInputPoint(BlockUIBase draggingBlock, Vector3 inputPointWorldPos, ProgramArea programArea = null)
+        {
+            if (draggingBlock == null)
+            {
+                Debug.LogError("[SNAP→InputPoint] draggingBlock is NULL! Aborting.");
+                return;
+            }
+
+            var inputConnector = draggingBlock.GetPrimaryInput();
+            if (inputConnector == null)
+            {
+                Debug.LogError("[SNAP→InputPoint] inputConnector is NULL! Aborting.");
+                return;
+            }
+
+            // Use provided programArea, or try to find it
+            if (programArea == null)
+            {
+                programArea = draggingBlock.GetComponentInParent<ProgramArea>();
+            }
+
+            // Position block so its INPUT aligns with InputPoint
+            Vector2 currentInputWorldPos = inputConnector.GetWorldPosition();
+            Vector2 offset = (Vector2)inputPointWorldPos - currentInputWorldPos;
+
+            RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
+            if (blockRect != null)
+            {
+                if (offset.magnitude > 0.1f)
+                {
+                    Vector3 newWorldPos = new Vector3(
+                        blockRect.position.x + offset.x,
+                        blockRect.position.y + offset.y,
+                        blockRect.position.z
+                    );
+                    draggingBlock.SetWorldPosition(newWorldPos);
+                }
+            }
+            else
+            {
+                Debug.LogError("[SNAP→InputPoint] blockRect is NULL!");
+            }
+
+            // Return block to ProgramArea if it was moved to rootCanvas during drag
+            if (draggingBlock.inProgramArea && programArea != null)
+            {
+                draggingBlock.transform.SetParent(programArea.transform, true);
+            }
+
+            // Note: No physical connection is created since InputPoint is not a connector
+            // The block becomes the first in the chain (no incoming connections)
 
             OnSnap?.Invoke(draggingBlock.Command);
         }

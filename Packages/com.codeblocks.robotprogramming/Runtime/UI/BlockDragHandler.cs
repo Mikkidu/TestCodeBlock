@@ -129,7 +129,8 @@ namespace CodeBlocks.UI
                 {
                     // Use unified FindNearestSnap for visual feedback
                     SnapManager.SnapInfo snapInfo = snapManager.FindNearestSnap(parentBlock, programArea.GetBlocks());
-                    
+
+                    // ONLY visual feedback during drag - NO position application!
                     // Update visual feedback (yellow highlight when ready)
                     parentBlock.UpdateSnapVisuals(snapInfo);
                 }
@@ -177,7 +178,7 @@ namespace CodeBlocks.UI
                     // Use unified FindNearestSnap that picks smallest distance
                     SnapManager.SnapInfo snapInfo = snapManager.FindNearestSnap(parentBlock, programArea.GetBlocks());
 
-                    if (snapInfo.canSnap && snapInfo.targetConnector != null)
+                    if (snapInfo.canSnap)
                     {
                         // Apply snap based on type returned by FindNearestSnap
                         if (snapInfo.snapType == SnapManager.SnapInfo.SnapType.InputToOutput)
@@ -188,8 +189,12 @@ namespace CodeBlocks.UI
                         else if (snapInfo.snapType == SnapManager.SnapInfo.SnapType.OutputToInput)
                         {
                             // OUTPUT of dragging block → INPUT of target block
-                            snapManager.ApplySnapToInput(parentBlock, snapInfo.targetConnector,
-                                programArea);
+                            snapManager.ApplySnapToInput(parentBlock, snapInfo.targetConnector, programArea);
+                        }
+                        else if (snapInfo.snapType == SnapManager.SnapInfo.SnapType.InputToInputPoint)
+                        {
+                            // INPUT of dragging block → InputPoint (start of program, Task #26)
+                            snapManager.ApplySnapToInputPoint(parentBlock, snapInfo.inputPointPosition, programArea);
                         }
                     }
                     else

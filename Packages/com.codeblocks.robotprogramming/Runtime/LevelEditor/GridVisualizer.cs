@@ -46,19 +46,6 @@ public class GridVisualizer : MonoBehaviour
         SceneView.duringSceneGui -= OnSceneViewGUI;
     }
 
-    private void EnsureVisualizationManager()
-    {
-        if (visualizationManager == null)
-        {
-            visualizationManager = GetComponent<LevelVisualizationManager>();
-            if (visualizationManager == null)
-            {
-                visualizationManager = gameObject.AddComponent<LevelVisualizationManager>();
-            }
-        }
-        visualizationManager.usePrefabs = usePrefabs;
-    }
-
     private static void OnSceneViewGUI(SceneView sceneView)
     {
         if (instance == null)
@@ -186,6 +173,19 @@ public class GridVisualizer : MonoBehaviour
         return new Vector2Int(-1, -1);
     }
 #endif
+
+    private void EnsureVisualizationManager()
+    {
+        if (visualizationManager == null)
+        {
+            visualizationManager = GetComponent<LevelVisualizationManager>();
+            if (visualizationManager == null)
+            {
+                visualizationManager = gameObject.AddComponent<LevelVisualizationManager>();
+            }
+        }
+        visualizationManager.usePrefabs = usePrefabs;
+    }
 
     private void OnDrawGizmos()
     {
@@ -332,6 +332,7 @@ public class GridVisualizer : MonoBehaviour
                pos.y >= 0 && pos.y < levelData.gridHeight;
     }
 
+#if UNITY_EDITOR
     public void PlaceTerrain(Vector2Int position, string terrainType)
     {
         var existing = levelData.GetTerrainAt(position.x, position.y);
@@ -504,6 +505,7 @@ public class GridVisualizer : MonoBehaviour
             }
         }
     }
+#endif
 
     public void ClearLevelVisualization()
     {

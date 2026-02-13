@@ -180,6 +180,20 @@ namespace CodeBlocks.UI
           }
 
           /// <summary>
+          /// Get the previous block connected to this block's primary input.
+          /// Override in subclasses for different navigation logic.
+          /// </summary>
+          public virtual BlockUIBase GetPreviousBlock()
+          {
+              var input = GetPrimaryInput();
+              if (input != null && input.connectedTo != null)
+              {
+                  return input.connectedTo.parentBlock;
+              }
+              return null;
+          }
+
+          /// <summary>
           /// Disconnect all outgoing connections from this block
           /// </summary>
           public virtual void DisconnectAllConnections()

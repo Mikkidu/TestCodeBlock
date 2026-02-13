@@ -4,8 +4,26 @@ public class TerrainBlockVisual : MonoBehaviour
 {
     public Vector2Int gridPosition;
     public string terrainType;
+    [SerializeField] private Transform visualRoot;
 
     private Material visualMaterial;
+
+    private void Awake()
+    {
+        ApplyRandomRotation();
+    }
+    
+    private void ApplyRandomRotation()
+    {
+        if (visualRoot == null)
+        {
+            Debug.LogWarning("TerrainBlockVisual: visualRoot is not assigned!");
+            return;
+        }
+
+        int randomYRotation = Random.Range(0, 4) * 90;
+        visualRoot.localRotation = Quaternion.Euler(0f, randomYRotation, 0f);
+    }
 
     public void SetTerrain(Vector2Int pos, string type)
     {

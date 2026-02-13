@@ -336,6 +336,14 @@ namespace CodeBlocks.Managers
         {
             OnStopButtonClicked();
         }
+        
+        /// <summary>
+        /// Restart program execution from external code. Equivalent to clicking Restart button.
+        /// </summary>
+        public void ResetProgram()
+        {
+            OnResetButtonClicked(); 
+        }
 
         /// <summary>
         /// Clears all blocks from program area. Equivalent to clicking Clear button.

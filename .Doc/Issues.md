@@ -711,3 +711,71 @@
   - BlockDragHandler.OnBeginDrag() - вызывает BypassBlockInLoop() но не RecalculateSize()
   - LoopBlockUI.RecalculateSize() - динамический расчёт высоты на основе contenSize
 - **Priority:** 🟠 HIGH (влияет на визуальный интерфейс)
+
+---
+
+## #26 Доработка механики цепи блоков - InputPoint и навигация
+
+**Status**: [✓] **DONE** (2026-01-30)
+**Priority**: 🔴 **CRITICAL** (основная механика для интеграции в play-united)
+**Description**: Реализовать базовую навигацию по цепи блоков и InputPoint как точку старта программы
+
+**Depends On**:
+- #24 ✓ (InitLevel API)
+- #25 ✓ (Start/Finish unified)
+- #9-#10b ✓ (Snap система)
+
+**Progress**: 3 из 3 обязательных шагов выполнено (100%)
+
+**Implementation Status**:
+
+### ✅ Шаг 1: Навигация по цепи (DONE - 2026-01-30)
+- ✓ Добавлен `GetPreviousBlock()` в BlockUIBase - обратная навигация по цепи
+- ✓ Добавлен `GetLastBlockInChain()` в ProgramArea - поиск последнего блока
+- ✓ Тесты в GameManagerAPITest
+- 📄 Код: BlockUIBase.cs:242-252, ProgramArea.cs:209-224
+
+### ✅ Шаг 2: InputPoint API (DONE - 2026-01-30)
+- ✓ Добавлено поле `inputPoint` в ProgramArea
+- ✓ API методы: GetInputPointTransform(), GetInputPointWorldPosition(), GetInputPointScreenPosition(), HasInputPoint()
+- ✓ Тесты в GameManagerAPITest
+- ✓ Инструкции по настройке в Unity: `.Doc/Tasks/26_Step2_InputPoint_Setup_Instructions.md`
+- 📄 Код: ProgramArea.cs:251-298
+
+### ✅ Шаг 3: Магнетизм к InputPoint (DONE - 2026-01-30)
+- ✓ Добавлен тип снэпа `InputToInputPoint` в SnapManager
+- ✓ FindNearestSnap() проверяет расстояние INPUT блока до InputPoint
+- ✓ Метод ApplySnapToInputPoint() позиционирует INPUT блока к InputPoint
+- ✓ Первый блок ВСЕГДА магнитится к InputPoint при сбросе
+- ✓ Интеграция в BlockDragHandler.OnEndDrag() и ProgramArea.OnDrop()
+- ✓ Все отладочные логи убраны (консоль чистая)
+- 📄 Код: SnapManager.cs:146-178, 418-467, BlockDragHandler.cs:172-205, ProgramArea.cs:83-112
+
+**BUGFIX (2026-01-30)**:
+- ✓ Исправлено направление магнетизма: OUTPUT→InputPoint → INPUT→InputPoint (точка старта)
+- ✓ Убраны логи-спам из OnDrag и FindNearestSnap
+- ✓ Первый блок теперь магнитится независимо от позиции сброса
+- ✓ Почищены все отладочные Debug.Log (остались только критичные LogError)
+
+### [ ] Шаг 4 (опционально): Connect/Disconnect методы в BlockConnector
+- [ ] Добавить методы Connect(), Disconnect() для явного управления соединениями
+- [ ] Инкапсуляция логики подключения
+- 📄 План: TBD
+
+**Key Achievements**:
+- ✅ InputPoint как единая точка старта программы
+- ✅ Навигация вперёд и назад по цепи (GetNextBlock, GetPreviousBlock, GetLastBlockInChain)
+- ✅ Автоматический магнетизм первого блока к InputPoint
+- ✅ Snap система учитывает InputPoint наряду с коннекторами блоков
+
+**Testing Strategy**:
+- ✓ Manual тесты: первый блок магнитится к InputPoint
+- ✓ API тесты в GameManagerAPITest
+- [ ] Integration тесты для многоблочных цепей
+
+**Next Steps**:
+- [ ] (Опционально) Шаг 4 - Connect/Disconnect методы
+- [ ] Интеграция в play-united
+- [ ] UPM пакет v1.1.0
+
+**Detailed plan**: [.Doc/Tasks/26_ChainManagement_ProgramAreaManager.md](Tasks/26_ChainManagement_ProgramAreaManager.md)

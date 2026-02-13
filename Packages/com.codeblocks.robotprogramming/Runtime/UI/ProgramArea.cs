@@ -15,6 +15,9 @@ namespace CodeBlocks.UI
         [SerializeField] private BlockFactory blockFactory;
         [SerializeField] private LoopBlockUI parentLoopBlock;
 
+        [Header("Input Point (Task #26)")]
+        [SerializeField] private Transform inputPoint;
+
         private ProgramSequence programSequence;
         private List<BlockUIBase> blocksInProgram = new List<BlockUIBase>();
         private RectTransform rectTransform;
@@ -77,15 +80,21 @@ namespace CodeBlocks.UI
                 // Add the new block to the program
                 AddBlockToProgram(newBlock);
 
+                // Task #26: FIRST BLOCK always snaps to InputPoint
+                if (blocksInProgram.Count == 1 && HasInputPoint())
+                {
+                    Vector3 inputPointPos = GetInputPointWorldPosition();
+                    snapManager.ApplySnapToInputPoint(newBlock, inputPointPos, this);
+                }
                 // Stage 6: Check for snap with existing blocks
-                if (blocksInProgram.Count > 1)  // More than just the new block
+                else if (blocksInProgram.Count > 1)  // More than just the new block
                 {
                     if (snapManager != null)
                     {
                         // Use unified FindNearestSnap that picks smallest distance
                         SnapManager.SnapInfo snapInfo = snapManager.FindNearestSnap(newBlock, blocksInProgram);
 
-                        if (snapInfo.canSnap && snapInfo.targetConnector != null)
+                        if (snapInfo.canSnap)
                         {
                             // Apply snap based on type returned by FindNearestSnap
                             if (snapInfo.snapType == SnapManager.SnapInfo.SnapType.InputToOutput)
@@ -97,6 +106,11 @@ namespace CodeBlocks.UI
                             {
                                 // OUTPUT of new block → INPUT of target block
                                 snapManager.ApplySnapToInput(newBlock, snapInfo.targetConnector, this);
+                            }
+                            else if (snapInfo.snapType == SnapManager.SnapInfo.SnapType.InputToInputPoint)
+                            {
+                                // INPUT of new block → InputPoint (start of program, Task #26)
+                                snapManager.ApplySnapToInputPoint(newBlock, snapInfo.inputPointPosition, this);
                             }
                         }
                         // If snap not possible, block stays at drop position
@@ -193,6 +207,28 @@ namespace CodeBlocks.UI
             return null;
         }
 
+        /// <summary>
+        /// Get the last block in the program chain.
+        /// Traverses from first block to the end of the chain.
+        /// Returns null if program is empty.
+        /// </summary>
+        public BlockUIBase GetLastBlockInChain()
+        {
+            BlockUIBase first = GetFirstBlock();
+            if (first == null) return null;
+
+            BlockUIBase current = first;
+            BlockUIBase last = current;
+
+            while (current != null)
+            {
+                last = current;
+                current = current.GetNextBlock();
+            }
+
+            return last;
+        }
+
         public void ClearProgram()
         {
             foreach (var block in blocksInProgram)
@@ -217,5 +253,54 @@ namespace CodeBlocks.UI
         {
             return snapManager;
         }
+
+        #region InputPoint API (Task #26)
+
+        /// <summary>
+        /// Get InputPoint Transform (for manual positioning or attachment)
+        /// </summary>
+        public Transform GetInputPointTransform()
+        {
+            return inputPoint;
+        }
+
+        /// <summary>
+        /// Get InputPoint position in world coordinates
+        /// </summary>
+        public Vector3 GetInputPointWorldPosition()
+        {
+            if (inputPoint == null)
+            {
+                Debug.LogWarning("[ProgramArea] InputPoint not assigned! Using ProgramArea top-left corner.");
+                return rectTransform.position;
+            }
+            return inputPoint.position;
+        }
+
+        /// <summary>
+        /// Get InputPoint position in screen coordinates
+        /// </summary>
+        public Vector2 GetInputPointScreenPosition()
+        {
+            Vector3 worldPos = GetInputPointWorldPosition();
+
+            if (canvas != null && canvas.worldCamera != null)
+            {
+                return RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, worldPos);
+            }
+
+            // Fallback for overlay canvas
+            return worldPos;
+        }
+
+        /// <summary>
+        /// Check if InputPoint is assigned
+        /// </summary>
+        public bool HasInputPoint()
+        {
+            return inputPoint != null;
+        }
+
+        #endregion
     }
 }

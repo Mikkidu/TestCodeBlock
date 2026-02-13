@@ -5,6 +5,39 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.10] - 2026-02-03
+
+### Fixed
+
+  - Wrapped editor-only methods in #if UNITY_EDITOR directives
+  - Moved EnsureVisualizationManager outside editor block (uses only runtime API)
+  - Fixed ArrayUtility and EditorUtility usage in runtime context
+  - PlaceTerrain, RemoveTerrain, PlaceObject, RemoveObject now editor-only
+
+## [1.0.9] - 2026-01-30
+
+### Added
+  - **InputPoint API** (#26) - unified program start point with 4 access methods
+  - **Chain navigation** - `GetPreviousBlock()`, `GetLastBlockInChain()` methods
+  - **Auto-snap to InputPoint** - first block always snaps to start point
+  - `GameManager.Reset()` - public method for game state reset
+  - `TerrainBlockVisual` random rotation
+
+  ### Changed
+  - InputPoint magnetism now uses INPUT connector (was OUTPUT)
+  - Debug logs cleaned up - console spam removed
+
+  ### Removed (BREAKING)
+  ⚠️ **Breaking changes from v1.0.8**
+  - `LevelGridData.start` field - use `GetStartPoint()`
+  - `LevelGridData.finish` field - use `GetFinishPoint()`
+
+  **Migration:** Run Tools → CodeBlocks → Migrate Levels before updating.
+
+  ### Notes
+  - InputPoint requires manual setup in Unity Editor
+  - See `.Doc/Tasks/26_Step2_InputPoint_Setup_Instructions.md`
+
 ## [1.1.0] - TBD (Planned)
 
 ### Removed (BREAKING CHANGES)
