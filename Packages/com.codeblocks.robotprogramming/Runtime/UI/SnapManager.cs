@@ -11,7 +11,7 @@ namespace CodeBlocks.UI
     {
         public event Action<ICommand> OnSnap;
 
-        [SerializeField] private float snapDistance = 50f;
+        [SerializeField] private float snapDistance = 100f;
 
         public struct SnapInfo
         {

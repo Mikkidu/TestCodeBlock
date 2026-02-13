@@ -44,13 +44,12 @@ namespace CodeBlocks.UI
             AddConnector(EXTERNAL_OUTPUT, BlockConnector.PointType.Output, externalOutputPoint);
 
             // Internal connectors (для блоков внутри цикла)
-            var intOut = AddConnector(INTERNAL_OUTPUT, BlockConnector.PointType.Output, internalOutputPoint,
+            AddConnector(INTERNAL_OUTPUT, BlockConnector.PointType.Output, internalOutputPoint,
                 BlockConnector.ConnectorRole.InternalOutput);
-            var intIn = AddConnector(INTERNAL_INPUT, BlockConnector.PointType.Input, internalInputPoint,
+            AddConnector(INTERNAL_INPUT, BlockConnector.PointType.Input, internalInputPoint,
                 BlockConnector.ConnectorRole.InternalInput);
             
-            intOut.connectedTo = intIn;
-            intIn.connectedTo = intOut;
+            ConnectInnerConnectors();
         }
         
         public override BlockConnector GetPrimaryInput()
@@ -81,6 +80,17 @@ namespace CodeBlocks.UI
         public bool HasInnerBlocks()
         {
             return GetFirstInnerBlock() != null;
+        }
+
+        public void ConnectInnerConnectors()
+        {
+            if (HasInnerBlocks()) return;
+            
+            var intOut = GetConnector(INTERNAL_OUTPUT);
+            var intIn = GetConnector(INTERNAL_INPUT);
+            
+            intOut.connectedTo = intIn;
+            intIn.connectedTo = intOut;
         }
 
         /// <summary>

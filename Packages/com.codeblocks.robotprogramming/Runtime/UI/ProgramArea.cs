@@ -94,7 +94,6 @@ namespace CodeBlocks.UI
                 // Stage 6: Check for snap with existing blocks
                 if (blocksInProgram.Count > 1)  // More than just the new block
                 {
-                    SnapManager snapManager = GetSnapManager();
                     if (snapManager != null)
                     {
                         // Use unified FindNearestSnap that picks smallest distance

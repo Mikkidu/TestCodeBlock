@@ -188,7 +188,7 @@ namespace CodeBlocks.UI
               foreach (var connector in GetAllConnectors())
               {
                   var connectedOther = connector.connectedTo;
-                  if (connectedOther != null) connectedOther.connectedTo = null;
+                  if (connectedOther != null && connectedOther.connectedTo == connector) connectedOther.connectedTo = null;
                   connector.connectedTo = null;
                }
           }

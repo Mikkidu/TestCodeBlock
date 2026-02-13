@@ -5,6 +5,24 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-01-22
+
+### Added
+- **BypassBlockInLoop()** - Drag & Drop improvement for Loop blocks
+  - Safe block extraction from Loop chain with automatic connection collapse
+  - InternalOutput reconnects to next block when extracting first block
+  - Previous block reconnects to InternalInput when extracting last block
+  - Debug logging for operation tracking
+  - Supports single block, first block, and last block scenarios
+
+### Changed
+- BlockDragHandler now collapses Loop connections IMMEDIATELY on drag start, before disconnect
+- Improved connection bypass logic - only checks primary input/output (external connectors)
+
+### Fixed
+- BlockDragHandler correctly handles block extraction from Loop without losing internal structure
+- Loop connections properly maintain state when dragging first/last blocks
+
 ## [1.0.2] - 2026-01-22
 
 ### Added

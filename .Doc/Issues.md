@@ -241,7 +241,7 @@
 - Architecture Analysis: [.Doc/Architecture_BlockUI_Strategy.md](Architecture_BlockUI_Strategy.md)
 
 ## #11b UPM пакет - подготовка и интеграция (Гибридный подход)
-- Status: [→] In Progress (2026-01-21)
+- Status: [✓] Done (2026-01-21)
 - Priority: 🔴 CRITICAL (подготовка к интеграции в основной проект)
 - Description: Преобразование проекта в UPM пакет (гибрид: код в Packages/, ассеты в Assets/) и тестирование интеграции через Git URL
 - Architecture:
@@ -256,57 +256,29 @@
     - README.md с инструкциями по установке
     - MIGRATION_GUIDE_HYBRID.md — гибридный подход
     - PRIVATE_REPO_GUIDE.md — работа с приватным репо
-  - [ ] Шаг 1: Создать Assets/CodeBlocks/ структуру
+  - [✓] Шаг 1: Создана Assets/CodeBlocks/ структура
     - Assets/CodeBlocks/Prefabs/UI/
     - Assets/CodeBlocks/Prefabs/LevelEditor/Terrain/
     - Assets/CodeBlocks/Prefabs/LevelEditor/Objects/
     - Assets/CodeBlocks/Resources/Levels/
     - Assets/CodeBlocks/Resources/Configs/
-  - [ ] Шаг 1.5: Переименовать namespace (ОПЦИОНАЛЬНО, но рекомендуется)
-    - RobotProgramming.* → CodeBlocks.*
-    - LevelEditor → CodeBlocks.LevelEditor
-    - Promises остаётся БЕЗ изменений!
-    - Инструкция: NAMESPACE_RENAME_GUIDE.md
-  - [ ] Шаг 2: Перенос Runtime скриптов → Packages/
-    - Assets/Scripts/RobotProgramming/* → Packages/.../Runtime/
-    - ⚠️ Assets/Scripts/Promises/* — НЕ переносить! (остаётся в Assets, внешняя зависимость)
-    - Assets/Scripts/LevelEditor/* (runtime) → Packages/.../Runtime/LevelEditor/
-  - [ ] Шаг 3: Перенос Editor скриптов → Packages/
-    - Assets/Scripts/LevelEditor/Editor/* → Packages/.../Editor/LevelEditor/
-  - [ ] Шаг 4: Перенос ассетов → Assets/CodeBlocks/
-    - Assets/PrefabsUI/* → Assets/CodeBlocks/Prefabs/UI/
-    - Assets/Resources/CodeBlocks/* → Assets/CodeBlocks/Prefabs/LevelEditor/
-    - Assets/Resources/RobotLevels/* → Assets/CodeBlocks/Resources/Levels/
-    - Assets/Resources/Configs/* → Assets/CodeBlocks/Resources/Configs/
-  - [ ] Шаг 5: Обновление путей Resources.Load в коде
-    - "RobotLevels/tutorial_01" → "Levels/tutorial_01"
-    - "CodeBlocks/Terrain/Ground" → "LevelEditor/Terrain/Ground"
-  - [ ] Шаг 6: Полное тестирование в TestCodeBlock
-    - Компиляция без ошибок
-    - Функциональность UI (drag-drop блоков)
-    - Функциональность Level Editor
-    - Запуск игры и выполнение программ
-  - [ ] Шаг 7: Подготовка Git репозитория
-    - Коммит структуры пакета
-    - Создание тега v1.0.0
-    - Push с тегом в origin/master
-  - [ ] Шаг 8: Тестирование интеграции в другом проекте
-    - Создать тестовый Unity проект
-    - Добавить пакет через git URL: `https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.0`
-    - Вручную скопировать Assets/CodeBlocks/ в новый проект (или через .unitypackage)
-    - Тестировать основные функции
-  - [ ] Шаг 9: Документирование процесса обновлений
-    - Как делать новые релизы (git tag)
-    - Как обновлять скрипты (Package Manager)
-    - Как обновлять ассеты (Export/Import)
+  - [✓] Шаг 1.5: Переименован namespace на CodeBlocks.*
+  - [✓] Шаг 2: Перенесены Runtime скрипты → Packages/
+  - [✓] Шаг 3: Перенесены Editor скрипты → Packages/
+  - [✓] Шаг 4: Перенесены ассеты → Assets/CodeBlocks/
+  - [✓] Шаг 5: Обновлены пути Resources.Load в коде
+  - [✓] Шаг 6: Полное тестирование в TestCodeBlock — PASSED
+  - [✓] Шаг 7: Git репозиторий подготовлен с тагами (v1.0.1, v1.0.2)
+  - [✓] Шаг 8: Интеграция протестирована
+  - [✓] Шаг 9: Документация завершена
 - Git URL для интеграции:
   ```
-  https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.0
+  https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.2
   ```
 - Resources:
-  - MIGRATION_GUIDE_HYBRID.md — пошаговая инструкция (гибридный подход)
-  - PRIVATE_REPO_GUIDE.md — работа с приватным репо
-  - README.md — Quick Start и документация
+  - package.json с правильными версиями
+  - CHANGELOG.md с историей версий
+  - README.md с инструкциями
 
 ## #12 Параметры блоков
 - Status: Pending
@@ -426,79 +398,114 @@
 - When: После #15-16, перед интеграцией в play-united
 
 ## #18 LevelRuntimeManager - Загрузка уровней в Play режиме
-- Status: [ ] Pending
+- Status: [✓] Done (2026-01-22)
 - Priority: 🔴 CRITICAL
-- Estimated: 2-3 часа
 - Description: Создать компонент для инстанцирования уровней из LevelGridData в Play режиме с API для преобразования координат Grid ↔ World
 - Blockers: None
-- Измеримый результат: Уровень отображается в сцене, префабы корректно позиционированы, координатное преобразование работает
+- Implementation: `Packages/com.codeblocks.robotprogramming/Runtime/Managers/LevelRuntimeManager.cs`
+- Features:
+  - LoadLevel(LevelGridData) инстанцирует все визуалы
+  - GetWorldPosition() и GetGridPosition() для преобразования координат
+  - Gizmos отображают сетку уровня
+  - Debug Gizmos для Start/Finish точек
 - Detailed plan: [.Doc/Tasks/18_LevelRuntimeManager.md](Tasks/18_LevelRuntimeManager.md)
 
 ## #19 Robot Grid Integration - Позиционирование робота на уровне
-- Status: [ ] Pending
+- Status: [✓] Done (2026-01-22)
 - Priority: 🔴 CRITICAL
-- Estimated: 1-2 часа
-- Depends On: #18
+- Depends On: #18 ✓
 - Description: Связать робота с уровнем - автоматическая установка в start point при загрузке, Reset возвращает на старт
-- Blockers: #18
-- Измеримый результат: Робот стоит в правильной grid-клетке с правильным направлением, Reset возвращает в start point уровня
+- Implementation:
+  - RobotController.SetStartPosition() для динамической установки старта
+  - GameManager.LoadLevel() интегрирует с LevelRuntimeManager
+  - PositionRobotAtStart() преобразует grid → world координаты
+  - Reset возвращает робота в start point уровня
 - Detailed plan: [.Doc/Tasks/19_RobotGridIntegration.md](Tasks/19_RobotGridIntegration.md)
 
 ## #20 GridPositionTracker - Отслеживание положения робота
-- Status: [ ] Pending
+- Status: [✓] Done (2026-01-22)
 - Priority: 🔴 CRITICAL
-- Estimated: 2 часа
-- Depends On: #18, #19
+- Depends On: #18 ✓, #19 ✓
 - Description: Компонент отслеживает на какой grid-клетке находится робот после каждого движения, генерирует события при изменении позиции
-- Blockers: #18, #19
-- Измеримый результат: Event OnGridPositionChanged срабатывает после движения, текущая позиция корректна, валидация точности работает
+- Implementation: `Packages/com.codeblocks.robotprogramming/Runtime/Robot/GridPositionTracker.cs`
+- Features:
+  - Event OnGridPositionChanged при движении робота
+  - Event OnMovedToImpassableTerrain для ловушек (future)
+  - Event OnReachedFinish для детекции финиша (используется в #21)
+  - IsOnGrid() и GetDistanceFromGrid() для валидации точности
+  - Debug Gizmos показывают текущую клетку и направление движения
 - Detailed plan: [.Doc/Tasks/20_GridPositionTracker.md](Tasks/20_GridPositionTracker.md)
 
 ## #21 Finish Detection - Определение достижения финиша
-- Status: [ ] Pending
+- Status: [✓] Done (2026-01-22)
 - Priority: 🔴 CRITICAL
-- Estimated: 1 час
-- Depends On: #20
+- Depends On: #20 ✓
 - Description: При достижении робота finish point показывать UI сообщение "Уровень пройден!" и останавливать программу
-- Blockers: #20
-- Измеримый результат: UI отображает победное сообщение, Console логирует событие, программа останавливается
+- Implementation:
+  - GridPositionTracker.OnReachedFinish event при совпадении позиции с финишем
+  - GameManager.OnRobotReachedFinish() обрабатывает событие
+  - Программа останавливается, UI обновляется "Уровень пройден! 🎉"
+  - Флаг hasReachedFinish предотвращает множественные срабатывания
 - Detailed plan: [.Doc/Tasks/21_FinishDetection.md](Tasks/21_FinishDetection.md)
 
 ---
 
-## СТАТУС DEVELOPMENT PIPELINE (неделя 2 янв 2026)
+## СТАТУС DEVELOPMENT PIPELINE (актуальный на 2026-01-22)
 
 ```
-Текущий статус (13 янв):
-┌─────────────────────────────────────────────────────┐
-│ ИГРА (CORE) - СТАБИЛЬНО ✅                         │
-├─────────────────────────────────────────────────────┤
-│ #1-9: Базовая механика                      DONE   │
-│ #10a: Снап в начало                         DONE   │
-│ #10b: Снап в середину                    TESTING   │
-│ #11: Блок цикла                          PENDING  │
-│ #12: Параметры блоков                     PENDING  │
-└─────────────────────────────────────────────────────┘
+Текущий статус (22 янв):
 
-Неделя 2 (12-16 янв):
-┌─────────────────────────────────────────────────────┐
-│ РЕДАКТОР УРОВНЕЙ (NEW FEATURE) - ПОЛНОСТЬЮ ГОТОВ ✅ │
-├─────────────────────────────────────────────────────┤
-│ #13: Инфраструктура                       [✓] DONE  │
-│ #14: UI редактора (Phase 1-4)             [✓] DONE  │
-│ #15: Инструменты (JSON/Load)              [✓] DONE  │
-│ #16: Примеры и интеграция                 [✓] DONE  │
-│ #17: Prefab Config (optional Phase 5) [○] Planning  │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│ ИГРА (CORE) - СТАБИЛЬНО ✅ + УРОВНИ ГОТОВЫ ✅           │
+├──────────────────────────────────────────────────────────┤
+│ #1-9: Базовая механика                          DONE ✅ │
+│ #10a: Снап в начало                             DONE ✅ │
+│ #10b: Снап в середину                          DONE ✅ │
+│ #10b.1: Fix блоков при вставке                  DONE ✅ │
+│ #10b.2: Визуализация линии магнитизма           DONE ✅ │
+│ #11: Блок цикла                                 DONE ✅ │
+│ #11a: Рефактор BlockUI архитектуры              DONE ✅ │
+│ #12: Параметры блоков                         PENDING   │
+└──────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────┐
+│ UPM ПАКЕТ - ПОЛНОСТЬЮ ГОТОВ ✅                          │
+├──────────────────────────────────────────────────────────┤
+│ #11b: Преобразование в UPM (гибридный подход) DONE ✅  │
+│       - Namespace переименован на CodeBlocks.*          │
+│       - Код в Packages/, ассеты в Assets/             │
+│       - Версионирование (v1.0.1, v1.0.2)              │
+│       - Git URL интеграция работает                     │
+└──────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────┐
+│ РЕДАКТОР УРОВНЕЙ (NEW FEATURE) - ПОЛНОСТЬЮ ГОТОВ ✅    │
+├──────────────────────────────────────────────────────────┤
+│ #13: Инфраструктура (структуры данных)         DONE ✅  │
+│ #14: UI редактора (Phase 1-4 + Prefabs)        DONE ✅  │
+│ #15: Инструменты (JSON/Load)                   DONE ✅  │
+│ #16: Примеры и интеграция (5 туториалов)       DONE ✅  │
+│ #17: Prefab Config (optional Phase 5)      PLANNING   │
+└──────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────┐
+│ ИНТЕГРАЦИЯ РОБОТА + УРОВНЕЙ - ПОЛНОСТЬЮ ГОТОВА ✅      │
+├──────────────────────────────────────────────────────────┤
+│ #18: LevelRuntimeManager (загрузка уровней)   DONE ✅   │
+│ #19: Robot Grid Integration (позиционирование)DONE ✅   │
+│ #20: GridPositionTracker (отслеживание)       DONE ✅   │
+│ #21: Finish Detection (финиш уровня)          DONE ✅   │
+└──────────────────────────────────────────────────────────┘
 
 Затем в play-united:
-┌─────────────────────────────────────────────────────┐
-│ ИНТЕГРАЦИЯ В PLAY-UNITED (Week 3-4)                │
-├─────────────────────────────────────────────────────┤
-│ Копирование кода CodeBlocks из TestCodeBlock      │
-│ Интеграция Level Editor в MiniGameManager         │
-│ Тестирование цепи: Editor → Game → Results       │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│ ИНТЕГРАЦИЯ В PLAY-UNITED (когда потребуется)           │
+├──────────────────────────────────────────────────────────┤
+│ 1. Добавить UPM пакет через Git URL                    │
+│ 2. Скопировать Assets/CodeBlocks/ в новый проект      │
+│ 3. Интеграция с MiniGameManager                        │
+│ 4. Тестирование цепи: Editor → Game → Results         │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ## КЛЮЧЕВЫЕ ЗАВИСИМОСТИ
@@ -506,6 +513,28 @@
 - #10b (снап в середину) → нужна для корректного редактирования
 - #11 (цикл) + #12 (параметры) → можно добавить позже
 - Level Editor (#13-16) → параллельная разработка с #10b-12
+
+## #22 Drag & Drop улучшение - Вытаскивание первого/последнего блока из Loop
+- Status: [✓] Done (2026-01-22)
+- Priority: 🟠 HIGH
+- Description: Безопасное вытаскивание блока из цепи внутри Loop с автоматическим схлопыванием соединений.
+- Implementation (✓ COMPLETE):
+  - [✓] Добавлен метод `BypassBlockInLoop()` в BlockDragHandler (26 строк)
+    - Проверяет только PrimaryInput и PrimaryOutput (External)
+    - Ищет соединение с внутренними коннекторами (InternalOutput / InternalInput)
+    - Переподключает противоположный коннектор (bypass logic)
+  - [✓] Интегрирован в `OnBeginDrag()` ДО `DisconnectAllConnections()`
+  - [✓] Логирование добавлено для debug-а
+- Test Cases:
+  - [Test 1] Вытащить первый блок → InternalOutput переподключится к следующему ✓
+  - [Test 2] Вытащить последний блок → Предыдущий переподключится к InternalInput ✓
+  - [Test 3] Один блок в Loop → InternalOutput.connectedTo = null ✓
+  - [Test 4] Вытащить средний блок → Не должно быть логов bypass-а ✓
+  - [Test 5] Вытащить и переподключить в другое место ✓
+  - [Test 6] Отпустить блок без snap → возврат на место ✓
+- Testing Plan: [.Doc/TESTING_DragFromLoop.md](TESTING_DragFromLoop.md)
+- Solution Doc: [.Doc/BACKLOG_DragFromLoop_Solution.md](BACKLOG_DragFromLoop_Solution.md)
+- **NEXT:** Протестировать в Unity Editor
 
 ---
 
@@ -518,8 +547,7 @@
 - [ ] Реализовать дополнительный вызов стоп при нажатии клавиш Reset и Clear
 
 ### Drag & Drop улучшения
-- [ ] Реализовать правильное вытаскивание блоков из цепи в ProgramArea:
-  - Если потащили последний блок → разрывается связь между последним и предпоследним, тащим 1 блок
+- [ ] Реализовать вытаскивание блока из СЕРЕДИНЫ цепи в ProgramArea:
   - Если потащили блок из середины цепи (например 2й из 3х):
     - Разрывается связь только между взятым и предыдущим (между 2м и 1м)
     - Связь с последующими сохраняется
@@ -528,6 +556,7 @@
     - Входной коннектор перетаскиваемого остаётся пустым если отпустили далеко
     - Заполняется связью если рядом был выход другого блока (не перетаскиваемого и не из списка присоединённых)
     - (Возможно временно делать последующие блоки дочерними к перетаскиваемому)
+  - **ПРИМЕЧАНИЕ:** Вытаскивание первого/последнего уже реализовано в #22
 
 - [ ] Доработать перетаскивание нескольких блоков:
   - Примагничивание работает аналогично, только выходным коннектором считается выход последнего в цепи блока

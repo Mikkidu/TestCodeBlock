@@ -295,7 +295,7 @@ MonoBehaviour:
   clearButton: {fileID: 2031867650}
   statusText: {fileID: 610935295}
   progressText: {fileID: 395252920}
-  currentLevel: {fileID: 11400000, guid: 304f18d4e9bb18d44a312ade288273f5, type: 2}
+  currentLevel: {fileID: 11400000, guid: 20030a737738d054b89cc4785e129226, type: 2}
   levelRuntimeManager: {fileID: 452801680}
 --- !u!4 &452801679
 Transform:

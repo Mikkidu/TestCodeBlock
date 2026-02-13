@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using CodeBlocks.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -17,6 +18,50 @@ namespace CodeBlocks.UI
         private ProgramArea programArea;
         
         private BlockUIBase parentBlock;
+
+        /// <summary>
+        /// If this block is first or last in a Loop, bypass it by reconnecting Loop internals.
+        /// Must be called BEFORE DisconnectAllConnections().
+        /// </summary>
+        private void BypassBlockInLoop()
+        {
+            var primaryInput = parentBlock.GetPrimaryInput();
+            var primaryOutput = parentBlock.GetPrimaryOutput();
+
+            // Case 1: This block is FIRST (input connected to InternalOutput)
+            if (primaryInput?.connectedTo?.role == BlockConnector.ConnectorRole.InternalOutput)
+            {
+                var internalOutput = primaryInput.connectedTo;
+
+                // Bypass: IntOut → (whatever our output is connected to)
+                internalOutput.connectedTo = primaryOutput?.connectedTo;
+                if (primaryOutput?.connectedTo != null)
+                {
+                    primaryOutput.connectedTo.connectedTo = internalOutput;
+                }
+
+                Debug.Log($"[DRAG] Loop bypassed FIRST block: {parentBlock.name}");
+                parentBlock.GetNextBlock().AlignToInputConnection();
+                return;
+            }
+
+            // Case 2: This block is LAST (output connected to InternalInput)
+            if (primaryOutput?.connectedTo?.role == BlockConnector.ConnectorRole.InternalInput)
+            {
+                var internalInput = primaryOutput.connectedTo;
+
+                // Bypass: (whatever our input is connected to) → IntIn
+                internalInput.connectedTo = primaryInput?.connectedTo;
+                if (primaryInput?.connectedTo != null)
+                {
+                    primaryInput.connectedTo.connectedTo = internalInput;
+                }
+
+                Debug.Log($"[DRAG] Loop bypassed LAST block: {parentBlock.name}");
+                parentBlock.GetNextBlock().AlignToInputConnection();
+                return;
+            }
+        }
 
         private void Awake()
         {
@@ -48,6 +93,9 @@ namespace CodeBlocks.UI
 
             originalParent = transform.parent;
             originalSiblingIndex = transform.GetSiblingIndex();
+
+            // IMPORTANT: Bypass block in Loop BEFORE disconnecting (collapse Loop connections)
+            BypassBlockInLoop();
 
             // Disconnect from any connected blocks when starting drag (Stage 6)
             parentBlock.DisconnectAllConnections();
@@ -112,6 +160,11 @@ namespace CodeBlocks.UI
             if (programArea == null && rootCanvas != null)
             {
                 programArea = rootCanvas.GetComponentInChildren<ProgramArea>();
+            }
+
+            if (parentBlock.Command.Type == CommandType.Loop)
+            {
+                ((LoopBlockUI)parentBlock).ConnectInnerConnectors();
             }
 
             if (programArea != null)

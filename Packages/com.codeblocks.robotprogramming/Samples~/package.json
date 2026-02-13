@@ -1,6 +1,6 @@
 {
   "name": "com.codeblocks.robotprogramming.samples",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "displayName": "CodeBlocks Robot Programming - Samples",
   "description": "Sample assets, prefabs, and demo levels for CodeBlocks Robot Programming package.",
   "unity": "6000.0",
