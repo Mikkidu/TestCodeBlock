@@ -266,6 +266,7 @@ GameObject:
   - component: {fileID: 452801679}
   - component: {fileID: 452801678}
   - component: {fileID: 452801680}
+  - component: {fileID: 452801681}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -295,7 +296,7 @@ MonoBehaviour:
   clearButton: {fileID: 2031867650}
   statusText: {fileID: 610935295}
   progressText: {fileID: 395252920}
-  currentLevel: {fileID: 11400000, guid: 0342d65f49f40364191b97b18ea90d11, type: 2}
+  currentLevel: {fileID: 11400000, guid: 20030a737738d054b89cc4785e129226, type: 2}
   levelRuntimeManager: {fileID: 452801680}
 --- !u!4 &452801679
 Transform:
@@ -327,6 +328,20 @@ MonoBehaviour:
   cellSize: 1
   levelOrigin: {x: 0, y: 0, z: 0}
   backgroundPrefab: {fileID: 0}
+--- !u!114 &452801681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 452801677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe70260e9b3821b4cbc32faac581edb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CodeBlocks.Runtime::LevelRuntimeManagerTest
+  gameManager: {fileID: 452801678}
+  testLevel: {fileID: 11400000, guid: 2bb26134bf73a5042b62b59027a3bd83, type: 2}
 --- !u!1 &487900262
 GameObject:
   m_ObjectHideFlags: 0

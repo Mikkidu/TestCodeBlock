@@ -2,6 +2,7 @@ using PU.Promises;
 using System;
 using System.Collections.Generic;
 using CodeBlocks.Core;
+using CodeBlocks.Data;
 using CodeBlocks.Execution;
 using CodeBlocks.Robot;
 using CodeBlocks.UI;
@@ -39,6 +40,8 @@ namespace CodeBlocks.Managers
         public event Action OnProgramStarted;
         public event Action OnProgramCompleted;
         public event Action<Exception> OnProgramFailed;
+
+        public event Action<LevelStatistics> OnLevelFinished;
 
         private void Init()
         {
@@ -408,6 +411,11 @@ namespace CodeBlocks.Managers
 
             // Update UI
             UpdateStatusDisplay("Level completed! 🎉");
+            var stat = new LevelStatistics
+            {
+                blocksUsed = programArea.GetBlocks().Count
+            };
+            OnLevelFinished?.Invoke(stat);
 
             // Clear block highlight
             ClearBlockHighlight();

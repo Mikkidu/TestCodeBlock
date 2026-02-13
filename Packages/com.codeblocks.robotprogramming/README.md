@@ -21,12 +21,12 @@ Visual block-based programming system for robot control with drag-and-drop inter
 2. Click `+` → `Add package from git URL`
 3. Enter:
    ```
-   https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.6
+   https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.7
    ```
 
 **SSH (with configured SSH key):**
 ```
-git@github.com:mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.6
+git@github.com:mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.7
 ```
 
 ### Option 2: With Sample Assets (Recommended)
