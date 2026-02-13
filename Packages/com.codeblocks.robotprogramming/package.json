@@ -1,0 +1,26 @@
+{
+  "name": "com.codeblocks.robotprogramming",
+  "version": "1.0.0",
+  "displayName": "CodeBlocks Robot Programming",
+  "description": "Visual block-based programming system for robot control with drag-and-drop interface, snap connections, and loop blocks.",
+  "unity": "6000.0",
+  "unityRelease": "0f1",
+  "documentationUrl": "https://github.com/mikkiducher/TestCodeBlock#readme",
+  "changelogUrl": "https://github.com/mikkiducher/TestCodeBlock/blob/master/Packages/com.codeblocks.robotprogramming/CHANGELOG.md",
+  "licensesUrl": "https://github.com/mikkiducher/TestCodeBlock/blob/master/LICENSE",
+  "keywords": [
+    "visual-programming",
+    "blocks",
+    "robot",
+    "education",
+    "drag-drop"
+  ],
+  "author": {
+    "name": "Mikki Ducher",
+    "url": "https://github.com/mikkiducher"
+  },
+  "dependencies": {
+    "com.unity.textmeshpro": "4.0.0-pre.2",
+    "com.unity.ugui": "2.0.0"
+  }
+}
