@@ -24,8 +24,22 @@ namespace CodeBlocks.Robot
                 return;
             }
 
-            startPosition = transform.position;
-            startRotation = transform.rotation;
+            if (startPosition == Vector3.zero)
+            {
+                startPosition = transform.position;
+            }
+            if (startRotation == Quaternion.identity)
+            {
+                startRotation = transform.rotation;
+            }
+        }
+        
+        public void SetStartPosition(Vector3 position, Quaternion rotation)
+        {
+            startPosition = position;
+            startRotation = rotation;
+
+            Debug.Log($"RobotController: Start position updated to {position}, rotation {rotation.eulerAngles}");
         }
 
         #region Movement Methods

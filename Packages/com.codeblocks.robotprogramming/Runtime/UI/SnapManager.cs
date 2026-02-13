@@ -104,7 +104,7 @@ namespace CodeBlocks.UI
                 }
             }
 
-            // STEP 2: Find nearest INPUT to OUTPUT of dragging block (ALL blocks, including middle of chain)
+            // STEP 2: Find nearest empty INPUT to OUTPUT of dragging block
             float nearestOutputToInputDist = float.MaxValue;
             BlockConnector nearestInput = null;
             BlockUIBase targetBlockForInput = null;
@@ -122,10 +122,10 @@ namespace CodeBlocks.UI
                         if (block == draggingBlock)
                             continue;
 
-                        // Check ALL inputs of this block (both beginning and middle of chain)
+                        // Check all empty inputs of this block
                         foreach (BlockConnector input in block.GetInputConnectors())
                         {
-                            if (input == null)
+                            if (input == null || input.connectedTo != null)
                                 continue;
 
                             Vector2 inputPosition = input.GetWorldPosition();
@@ -247,6 +247,8 @@ namespace CodeBlocks.UI
             }
 
             inputPoint.connectedTo = targetOutput;
+            
+            //draggingBlock.AlignToInputConnection();
             // Check if targetOutput already has something connected (INSERT MIDDLE case)
             BlockConnector oldConnection = targetOutput.connectedTo;
 
@@ -267,22 +269,6 @@ namespace CodeBlocks.UI
                     Debug.Log($"[MODE] INSERT MIDDLE: {targetBlock.gameObject.name} → {draggingBlock.gameObject.name} → {blockB.gameObject.name}");
                 }
 
-                // Step 1: Position dragging block (C) so its INPUT aligns with A's OUTPUT
-                Vector2 targetPosition = targetOutput.GetWorldPosition();
-                Vector2 currentInputWorldPos = inputPoint.GetWorldPosition();
-                Vector2 offsetForC = targetPosition - currentInputWorldPos;
-
-                RectTransform cRect = draggingBlock.GetComponent<RectTransform>();
-                if (cRect != null && offsetForC.magnitude > 0.1f)
-                {
-                    cRect.position = new Vector3(
-                        cRect.position.x + offsetForC.x,
-                        cRect.position.y + offsetForC.y,
-                        cRect.position.z
-                    );
-                    Debug.Log($"  → Shift {draggingBlock.gameObject.name} by ({offsetForC.x:F1}, {offsetForC.y:F1})");
-                }
-
                 // Step 2: Reconnect A → C
                 targetOutput.connectedTo = inputPoint;
 
@@ -294,38 +280,15 @@ namespace CodeBlocks.UI
                     draggingOutput.connectedTo = oldConnection;
                     oldConnection.connectedTo = draggingOutput;
 
-                    blockB.AlignToInputConnection();
+                    //blockB.AlignToInputConnection();
                 }
             }
             else
             {
-                // Simple case: just append at end
-                Debug.Log($"[MODE] APPEND: {draggingBlock.gameObject.name} → {targetBlock.gameObject.name}");
-
-                // Get the world position where we want the input point to be
-                Vector2 targetPosition = targetOutput.GetWorldPosition();
-
-                // Get the current world position of the input point
-                Vector2 currentInputWorldPos = inputPoint.GetWorldPosition();
-
-                // Calculate the offset we need to move the block
-                Vector2 offset = targetPosition - currentInputWorldPos;
-
-                // Apply the offset to the block's position in world space
-                RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
-                if (blockRect != null && offset.magnitude > 0.1f)
-                {
-                    blockRect.position = new Vector3(
-                        blockRect.position.x + offset.x,
-                        blockRect.position.y + offset.y,
-                        blockRect.position.z
-                    );
-                    Debug.Log($"  → Shift {draggingBlock.gameObject.name} by ({offset.x:F1}, {offset.y:F1})");
-                }
-
                 // Create physical connection between blocks
                 targetOutput.connectedTo = inputPoint;
             }
+            draggingBlock.AlignToInputConnection();
 
             // Log state after snap
             LogBlockState(draggingBlock, "after", "dragging");
@@ -368,87 +331,29 @@ namespace CodeBlocks.UI
             Debug.Log($"[SNAP] {draggingBlock.gameObject.name}.output → {targetBlock.gameObject.name}.input");
             LogBlockState(draggingBlock, "before", "dragging");
             LogBlockState(targetBlock, "before", "target");
-
-            // Check if there's already an OUTPUT connected to targetInput (means insert into middle)
-            BlockConnector previousOutput = targetInput.connectedTo; //FindConnectedOutput(targetInput, allBlocks);
-
-            if (previousOutput != null)
-            {
-                // INSERTION INTO MIDDLE: A → [C] → B
-                BlockUIBase blockA = previousOutput.parentBlock;
-                Debug.Log($"[MODE] INSERT MIDDLE: {blockA.gameObject.name} → {draggingBlock.gameObject.name} → {targetBlock.gameObject.name}");
-
-                // Step 1: Position dragging block (C) so its INPUT aligns with A's OUTPUT
-                var dragInputs = draggingBlock.GetInputConnectors();
-                if (dragInputs.Any())
-                {
-                    BlockConnector draggingInput = dragInputs.First();
-                    Vector2 aOutputPos = previousOutput.GetWorldPosition();
-                    Vector2 cInputPos = draggingInput.GetWorldPosition();
-                    Vector2 offsetForC = aOutputPos - cInputPos;
-
-                    RectTransform cRect = draggingBlock.GetComponent<RectTransform>();
-                    if (cRect != null && offsetForC.magnitude > 0.1f)
-                    {
-                        cRect.position = new Vector3(
-                            cRect.position.x + offsetForC.x,
-                            cRect.position.y + offsetForC.y,
-                            cRect.position.z
-                        );
-                        Debug.Log($"  → Shift {draggingBlock.gameObject.name} by ({offsetForC.x:F1}, {offsetForC.y:F1})");
-                    }
-
-                    // Step 2: Reconnect A → C
-                    previousOutput.connectedTo = draggingInput;
-                }
-
-                // Step 3: Position target block (B) so its INPUT aligns with C's OUTPUT
-                Vector2 cOutputPos = outputPoint.GetWorldPosition();
-                Vector2 bInputPos = targetInput.GetWorldPosition();
-                Vector2 offsetForB = cOutputPos - bInputPos;
-
-                RectTransform bRect = targetBlock.GetComponent<RectTransform>();
-                if (bRect != null && offsetForB.magnitude > 0.1f)
-                {
-                    bRect.position = new Vector3(
-                        bRect.position.x + offsetForB.x,
-                        bRect.position.y + offsetForB.y,
-                        bRect.position.z
-                    );
-                    Debug.Log($"  → Shift {targetBlock.gameObject.name} by ({offsetForB.x:F1}, {offsetForB.y:F1})");
-
-                    // Step 4: Cascade alignment for all blocks after B
-                    BlockUIBase nextBlock = targetBlock.GetNextBlock();
-                    if (nextBlock != null)
-                    {
-                        nextBlock.AlignToInputConnection();
-                    }
-                }
-            }
-            else
-            {
-                // INSERT AT BEGINNING: [C] → A
-                Debug.Log($"[MODE] INSERT START: {draggingBlock.gameObject.name} → {targetBlock.gameObject.name}");
-
-                // Position dragging block so its OUTPUT aligns with A's INPUT
-                Vector2 targetPosition = targetInput.GetWorldPosition();
-                Vector2 currentOutputWorldPos = outputPoint.GetWorldPosition();
-                Vector2 offset = targetPosition - currentOutputWorldPos;
-
-                RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
-                if (blockRect != null && offset.magnitude > 0.1f)
-                {
-                    blockRect.position = new Vector3(
-                        blockRect.position.x + offset.x,
-                        blockRect.position.y + offset.y,
-                        blockRect.position.z
-                    );
-                    Debug.Log($"  → Shift {draggingBlock.gameObject.name} by ({offset.x:F1}, {offset.y:F1})");
-                }
-            }
+            
+            // INSERT AT BEGINNING: [C] → A
+            Debug.Log($"[MODE] INSERT START: {draggingBlock.gameObject.name} → {targetBlock.gameObject.name}");
 
             // Create physical connection: dragging block's OUTPUT → target INPUT
             outputPoint.connectedTo = targetInput;
+            
+            Vector2 targetPosition = targetInput.GetWorldPosition();
+            Vector2 currentOutputWorldPos = outputPoint.GetWorldPosition();
+            Vector2 offset = targetPosition - currentOutputWorldPos;
+
+            RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
+            if (blockRect != null && offset.magnitude > 0.1f)
+            {
+                blockRect.position = new Vector3(
+                    blockRect.position.x + offset.x,
+                    blockRect.position.y + offset.y,
+                    blockRect.position.z
+                );
+                Debug.Log($"  → Shift {draggingBlock.gameObject.name} by ({offset.x:F1}, {offset.y:F1})");
+            }
+            
+            targetBlock.AlignToInputConnection();
 
             // Log state after snap
             LogBlockState(draggingBlock, "after", "dragging");

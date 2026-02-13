@@ -136,8 +136,15 @@ git push origin master --tags
 ### Установка пакета
 
 1. **Package Manager → Add package from git URL**
+
+   **HTTPS:**
    ```
-   https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.0
+   https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.2
+   ```
+
+   **SSH:**
+   ```
+   git@github.com:mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.2
    ```
 
 2. **Скопировать ассеты** (один из вариантов):

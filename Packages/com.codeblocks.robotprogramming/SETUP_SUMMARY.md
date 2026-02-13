@@ -117,8 +117,14 @@ Promises → БЕЗ ИЗМЕНЕНИЙ!
 
 После миграции используй этот URL в Package Manager:
 
+**HTTPS:**
 ```
-https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.0
+https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.2
+```
+
+**SSH:**
+```
+git@github.com:mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.2
 ```
 
 ---

@@ -241,7 +241,11 @@ git push origin master --tags
 ```
 Package Manager → Add package from git URL
 
-https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.0
+HTTPS:
+https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.2
+
+SSH:
+git@github.com:mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.2
 ```
 
 **Что получит другой проект:**

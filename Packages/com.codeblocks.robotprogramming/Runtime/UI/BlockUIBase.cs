@@ -220,15 +220,9 @@ namespace CodeBlocks.UI
                       );
                       Debug.Log($"[ALIGN] {gameObject.name} aligned to {connectedOutput.parentBlock?.gameObject.name}");
                   }
-
-                  OnAlignmentComplete?.Invoke();
-                  // Propagate alignment to next block
-                  GetNextBlock()?.AlignToInputConnection();
               }
-              else
-              {
-                  OnAlignmentComplete?.Invoke();
-              }
+              OnAlignmentComplete?.Invoke();
+              GetNextBlock()?.AlignToInputConnection();
           }
 
           #endregion

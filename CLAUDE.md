@@ -141,12 +141,21 @@ This project maintains a **two-level task tracking approach** for clarity and vi
 - Completing a task: Mark `[✓] Done` in both files
 - If blocked: Update Blockers field, do NOT close task—keep it visible
 
+**Backlog Workflow:**
+- **ЗАДАЧИ НА БУДУЩЕЕ (BACKLOG)** section in Issues.md contains unplanned tasks, bugs, and future improvements
+- When user requests "распланируй задачу из backlog" or "создай задачу из backlog":
+  1. Create detailed task plan in `.Doc/Tasks/[Number]_[TaskName].md`
+  2. Add task entry in Issues.md main list (above BACKLOG section)
+  3. **REMOVE the item from BACKLOG list** (task is now planned)
+- Backlog items stay as simple bullet points until planning
+- Planning converts backlog item → full task (#N) with detailed plan
+
 **Documentation Structure:**
 ```
 .Doc/
 ├── Architecture/           # System design documents
 ├── Tasks/                  # Detailed task plans (one per task)
-├── Issues.md              # Central task registry (brief)
+├── Issues.md              # Central task registry (brief) + Backlog section at end
 └── [ProjectName]_Guide.md # Quick reference
 ```
 

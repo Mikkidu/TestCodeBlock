@@ -23,9 +23,15 @@ namespace CodeBlocks.Managers
         [SerializeField] private Button clearButton;
         [SerializeField] private TextMeshProUGUI statusText;
         [SerializeField] private TextMeshProUGUI progressText;
+        
+        [Header("Level Settings")]
+        [SerializeField] private LevelGridData currentLevel;
+        [SerializeField] private LevelRuntimeManager levelRuntimeManager;
 
         private ICommand currentExecutingCommand;
         private bool isProgramRunning = false;
+
+        private GridPositionTracker robotPositionTracker;
 
         public event Action<ICommand> OnCommandStarted;
         public event Action<ICommand> OnCommandCompleted;
@@ -39,6 +45,8 @@ namespace CodeBlocks.Managers
             {
                 robotController = FindObjectOfType<RobotController>();
             }
+            robotPositionTracker = robotController.GetComponent<GridPositionTracker>();
+            
 
             if (commandExecutor == null)
             {
@@ -90,6 +98,12 @@ namespace CodeBlocks.Managers
             {
                 blockPalette.PopulatePalette();
             }
+            
+            levelRuntimeManager ??= FindFirstObjectByType<LevelRuntimeManager>();
+            
+            robotPositionTracker.OnGridPositionChanged += OnRobotGridPositionChanged;
+            robotPositionTracker.OnMovedToImpassableTerrain += OnRobotMovedToImpassable;
+            robotPositionTracker.OnReachedFinish += OnRobotReachedFinish;
 
             UpdateStatusDisplay();
         }
@@ -123,6 +137,10 @@ namespace CodeBlocks.Managers
             {
                 clearButton.onClick.RemoveListener(OnClearButtonClicked);
             }
+            
+            robotPositionTracker.OnGridPositionChanged -= OnRobotGridPositionChanged;
+            robotPositionTracker.OnMovedToImpassableTerrain -= OnRobotMovedToImpassable;
+            robotPositionTracker.OnReachedFinish -= OnRobotReachedFinish;
         }
 
         private void OnRunButtonClicked()
@@ -174,9 +192,104 @@ namespace CodeBlocks.Managers
             isProgramRunning = false;
             UpdateStatusDisplay("Остановлено");
         }
+        
+        private void Start()
+        {
+            if (currentLevel != null)
+            {
+                LoadLevel(currentLevel);
+            }
+            else
+            {
+                Debug.LogWarning("GameManager: No level assigned! Please assign a LevelGridData to 'Current Level' field.");
+            }
+        }
+        
+        public void LoadLevel(LevelGridData level)
+        {
+            if (level == null)
+            {
+                Debug.LogError("GameManager: Cannot load null level!");
+                return;
+            }
+
+            if (levelRuntimeManager == null)
+            {
+                Debug.LogError("GameManager: LevelRuntimeManager not found!");
+                return;
+            }
+
+            // Load level visuals
+            levelRuntimeManager.LoadLevel(level);
+
+            // Position robot at start
+            PositionRobotAtStart(level);
+            robotController.GetComponent<GridPositionTracker>().Initialize(levelRuntimeManager, level);
+
+            Debug.Log($"GameManager: Level '{level.levelName}' loaded successfully!");
+        }
+        
+        private void PositionRobotAtStart(LevelGridData level)
+        {
+            if (robotController == null)
+            {
+                Debug.LogWarning("GameManager: RobotController not found!");
+                return;
+            }
+
+            if (level.start == null)
+            {
+                Debug.LogWarning($"GameManager: Level '{level.levelName}' has no start point!");
+                return;
+            }
+
+            // Convert grid position to world position
+            Vector3 worldPos = levelRuntimeManager.GetWorldPosition(level.start.position);
+
+            // Center robot in the cell
+            worldPos.x += levelRuntimeManager.CellSize * 0.5f;
+            worldPos.z += levelRuntimeManager.CellSize * 0.5f;
+            worldPos.y = robotController.transform.position.y; // Preserve height
+
+            // Convert direction to rotation
+            Quaternion worldRot = CardinalDirectionToRotation(level.start.direction);
+
+            // Update robot's start position
+            robotController.SetStartPosition(worldPos, worldRot);
+
+            // Apply immediately (teleport robot)
+            robotController.Reset();
+
+            Debug.Log($"GameManager: Robot positioned at grid {level.start.position}, world {worldPos}, direction {level.start.direction}");
+        }
+        
+        private Quaternion CardinalDirectionToRotation(CardinalDirection dir)
+        {
+            float angle = dir switch
+            {
+                CardinalDirection.North => 0f,
+                CardinalDirection.East => 90f,
+                CardinalDirection.South => 180f,
+                CardinalDirection.West => 270f,
+                _ => 0f
+            };
+            return Quaternion.Euler(0, angle, 0);
+        }
 
         private void OnResetButtonClicked()
         {
+            if (programArea != null)
+            {
+                List<BlockUIBase> blocks = programArea.GetBlocks();
+                foreach (var block in blocks)
+                {
+                    if (block.Command is Commands.LoopCommand loopCmd)
+                    {
+                        loopCmd.RequestStop();
+                    }
+                }
+            }
+            
             if (commandExecutor != null)
             {
                 commandExecutor.Stop();
@@ -186,6 +299,8 @@ namespace CodeBlocks.Managers
             {
                 robotController.Reset();
             }
+            
+            robotPositionTracker?.ResetPosition();
 
             isProgramRunning = false;
             currentExecutingCommand = null;
@@ -229,6 +344,66 @@ namespace CodeBlocks.Managers
             UpdateStatusDisplay("Программа завершена!");
             ClearBlockHighlight();
         }
+        
+        private void OnRobotReachedFinish()
+        {
+            Debug.Log("🎉 GameManager: Robot reached finish!");
+
+            // Stop program execution
+            if (commandExecutor != null)
+            {
+                commandExecutor.Stop();
+            }
+
+            // Stop all loop commands
+            if (programArea != null)
+            {
+                List<BlockUIBase> blocks = programArea.GetBlocks();
+                foreach (var block in blocks)
+                {
+                    if (block.Command is Commands.LoopCommand loopCmd)
+                    {
+                        loopCmd.RequestStop();
+                    }
+                }
+            }
+
+            isProgramRunning = false;
+            currentExecutingCommand = null;
+
+            // Update UI
+            UpdateStatusDisplay("Уровень пройден! 🎉");
+
+            // Clear block highlight
+            ClearBlockHighlight();
+
+            PlayVictoryEffects();
+        }
+        
+        private void PlayVictoryEffects()
+        {
+            // Highlight robot in green
+            if (robotController != null)
+            {
+                Renderer robotRenderer = robotController.GetComponent<Renderer>();
+                if (robotRenderer != null)
+                {
+                    robotRenderer.material.color = Color.green;
+                }
+            }
+
+            // Play victory sound (if AudioSource exists)
+            AudioSource audioSource = GetComponent<AudioSource>();
+            if (audioSource != null && audioSource.clip != null)
+            {
+                audioSource.Play();
+            }
+
+            // TODO: Animate finish visual (rotation, scale pulse)
+            // TODO: Show particle effect
+        }
+        
+        
 
         private void OnProgramFailedHandler(Exception exception)
         {
@@ -289,6 +464,24 @@ namespace CodeBlocks.Managers
                     blockImage.color = block.Command.GetBlockColor();
                 }
             }
+        }
+        
+        // Event handlers
+        private void OnRobotGridPositionChanged(Vector2Int newPos, Vector2Int oldPos)
+        {
+            Debug.Log($"GameManager: Robot moved from {oldPos} to {newPos}");
+
+            // Validate positioning accuracy
+            if (robotPositionTracker != null && !robotPositionTracker.IsOnGrid())
+            {
+                Debug.LogWarning($"GameManager: Robot is not precisely on grid! Distance: {robotPositionTracker.GetDistanceFromGrid():F3}");
+            }
+        }
+
+        private void OnRobotMovedToImpassable(Vector2Int gridPos)
+        {
+            Debug.LogWarning($"GameManager: ⚠️ Robot moved to impassable terrain at {gridPos}");
+            // TODO: Handle game over, restart level, etc. (future task)
         }
     }
 }

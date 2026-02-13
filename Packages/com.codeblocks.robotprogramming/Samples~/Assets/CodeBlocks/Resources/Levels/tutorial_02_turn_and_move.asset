@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3effcfbc26d027488938f3c2488ec02, type: 3}
+  m_Name: tutorial_02_turn_and_move
+  m_EditorClassIdentifier: Assembly-CSharp::LevelGridData
+  levelId: tutorial_02_turn_and_move
+  levelName: 'Tutorial 2: Turn and Move'
+  difficulty: 1
+  hintText: 'Move the robot in an L-shape.
+
+
+    Use: Forward + Turn blocks
+
+    (Go
+    right 5 steps, then up 3 steps)'
+  gridWidth: 8
+  gridHeight: 8
+  terrain:
+  - position: {x: 0, y: 0}
+    terrainType: Ground
+  - position: {x: 1, y: 0}
+    terrainType: Ground
+  - position: {x: 2, y: 0}
+    terrainType: Ground
+  - position: {x: 3, y: 0}
+    terrainType: Ground
+  - position: {x: 4, y: 0}
+    terrainType: Ground
+  - position: {x: 5, y: 0}
+    terrainType: Ground
+  - position: {x: 5, y: 1}
+    terrainType: Ground
+  - position: {x: 5, y: 2}
+    terrainType: Ground
+  - position: {x: 5, y: 3}
+    terrainType: Ground
+  objects: []
+  start:
+    position: {x: 0, y: 0}
+    direction: 1
+  finish:
+    position: {x: 5, y: 3}
+  visualLayerId: 1

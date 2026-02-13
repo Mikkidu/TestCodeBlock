@@ -16,14 +16,37 @@ Visual block-based programming system for robot control with drag-and-drop inter
 
 ### Option 1: Git URL (Recommended)
 
+**HTTPS (public access):**
 1. Open Unity Package Manager
 2. Click `+` → `Add package from git URL`
 3. Enter:
    ```
-   https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.0
+   https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.2
    ```
 
-### Option 2: Local Package
+**SSH (with configured SSH key):**
+```
+git@github.com:mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.2
+```
+
+### Option 2: With Sample Assets (Recommended)
+
+1. **Add package via UPM** (as above)
+2. **Import Samples** (optional):
+   - Open Package Manager → "CodeBlocks Robot Programming"
+   - Click "Samples" tab
+   - Click "Import" next to "Sample Assets"
+   - Assets will be copied to `Assets/CodeBlocks/`
+
+**What's included in samples:**
+- UI Prefabs (BlockUI, LoopBlockUI, ProgramArea, BlockPalette)
+- Robot Prefabs
+- LevelEditor Prefabs (Terrain, Objects)
+- Demo Levels (5 tutorial levels as JSON)
+- Materials and Sprites
+- Resource configurations (RobotConfig, LevelEditor configs)
+
+### Option 3: Local Package
 
 Add to `Packages/manifest.json`:
 ```json
@@ -188,6 +211,6 @@ See [LICENSE](https://github.com/mikkiducher/TestCodeBlock/blob/master/LICENSE)
 
 ## Version
 
-Current: **1.0.0**
+Current: **1.0.2**
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
