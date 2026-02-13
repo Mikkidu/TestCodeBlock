@@ -1,0 +1,181 @@
+Assets/
+│
+├── Scenes/                                    [📍 Игровые сцены]
+│   └── GameScene.unity
+│
+├── Prefabs/                                   [🎁 Переиспользуемые объекты]
+│   ├── Robot/
+│   │   └── Robot.prefab
+│   │       ├── Cube (тело робота)
+│   │       └── DirectionIndicator (индикатор)
+│   │
+│   └── UI/
+│       ├── Canvas.prefab (основной Canvas)
+│       ├── BlockUI.prefab (одиночный блок команды)
+│       ├── BlockPalette.prefab (палитра команд)
+│       └── ProgramArea.prefab (рабочая область)
+│
+├── ScriptableObjects/                        [⚙️ Конфиги и данные]
+│   ├── Configs/
+│   │   └── RobotConfig.asset
+│   │       ├── moveDistance = 1.0
+│   │       ├── moveSpeed = 2.0
+│   │       ├── turnAngle = 90
+│   │       ├── movementCurve (AnimationCurve)
+│   │       └── rotationCurve (AnimationCurve)
+│   │
+│   └── Programs/
+│       ├── Example_Simple.asset
+│       └── Example_Complex.asset
+│
+├── Materials/                                 [🎨 Материалы для визуализации]
+│   ├── RobotBody.mat (основной материал робота)
+│   ├── DirectionMarker.mat (красный индикатор)
+│   └── BlockDefault.mat (материал для UI блоков)
+│
+├── Sprites/                                   [🖼️ 2D графика и иконки]
+│   ├── Blocks/                       (иконки команд)
+│   │   ├── MoveForward.png           (синяя: вперёд)
+│   │   ├── MoveBackward.png          (оранжевая: назад)
+│   │   ├── TurnLeft.png              (золотая: влево)
+│   │   ├── TurnRight.png             (зелёная: вправо)
+│   │   └── Wait.png                  (жёлтая: ждать)
+│   │
+│   ├── UI/                           (иконки кнопок)
+│   │   ├── ButtonRun.png             (▶ Запуск)
+│   │   ├── ButtonStop.png            (⏹ Стоп)
+│   │   ├── ButtonReset.png           (↺ Сброс)
+│   │   └── ButtonClear.png           (🗑 Очистить)
+│   │
+│   └── Robot/                        (визуализация робота)
+│       ├── RobotIdle.png
+│       └── RobotExecuting.png
+│
+├── Sounds/                                    [🔊 Звуковые эффекты]
+│   ├── robot_move.wav                (при движении вперёд/назад)
+│   ├── robot_turn.wav                (при повороте)
+│   ├── block_snap.wav                (при привязке блока)
+│   ├── block_delete.wav              (при удалении блока)
+│   ├── program_start.wav             (начало программы)
+│   ├── program_complete.wav          (завершение успешно)
+│   └── error_sound.wav               (ошибка при выполнении)
+│
+├── Resources/                                 [📦 Динамическая загрузка]
+│   └── Configs/
+│       └── RobotConfig.asset         (резервная копия для Resources.Load)
+│
+├── Editor/                                    [🛠️ Редакторские инструменты]
+│   └── Tools/
+│       ├── BlockDataImporter.cs      (импорт программ)
+│       ├── RobotConfigValidator.cs   (проверка параметров)
+│       └── ProgramGenerator.cs       (генерация тестовых программ)
+│
+└── Scripts/                                   [💻 Исходный код]
+    ├── Promises/                     (внешняя библиотека)
+    ├── RobotProgramming/
+    │   ├── Core/                     (интерфейсы)
+    │   │   ├── ICommand.cs
+    │   │   ├── IRobotController.cs
+    │   │   ├── ICommandExecutor.cs
+    │   │   └── CommandBase.cs
+    │   │
+    │   ├── Data/                     (структуры данных)
+    │   │   ├── CommandType.cs
+    │   │   ├── BlockData.cs
+    │   │   └── ProgramData.cs
+    │   │
+    │   ├── Commands/                 (реализация команд)
+    │   │   ├── MoveForwardCommand.cs
+    │   │   ├── MoveBackwardCommand.cs
+    │   │   ├── TurnLeftCommand.cs
+    │   │   ├── TurnRightCommand.cs
+    │   │   └── WaitCommand.cs
+    │   │
+    │   ├── Robot/                    (управление роботом)
+    │   │   ├── RobotController.cs    (движения + анимация)
+    │   │   └── RobotConfig.cs        (конфигурация)
+    │   │
+    │   ├── Execution/                (система выполнения)
+    │   │   ├── CommandExecutor.cs    (оркестратор)
+    │   │   ├── ProgramSequence.cs    (управление цепочкой)
+    │   │   └── ExecutionContext.cs   (контекст выполнения)
+    │   │
+    │   ├── UI/                       (пользовательский интерфейс)
+    │   │   ├── BlockUI.cs            (drag-drop обработчик)
+    │   │   ├── BlockFactory.cs       (создание блоков)
+    │   │   ├── ProgramArea.cs        (рабочая область)
+    │   │   └── BlockPalette.cs       (палитра команд)
+    │   │
+    │   └── Managers/                 (главные менеджеры)
+    │       └── GameManager.cs        (интеграция всего)
+    │
+    └── Starter Assets/               (стартовые ассеты Unity)
+
+
+═══════════════════════════════════════════════════════════════════
+
+СВЯЗИ И ЗАВИСИМОСТИ:
+
+GameManager (Managers)
+  │
+  ├─→ RobotController (Robot)
+  │   └─→ RobotConfig (ScriptableObjects/Configs)
+  │
+  ├─→ CommandExecutor (Execution)
+  │   ├─→ ICommand (Core)
+  │   └─→ ExecutionContext (Execution)
+  │
+  ├─→ BlockPalette (UI)
+  │   ├─→ BlockFactory (UI)
+  │   └─→ BlockUI (UI)
+  │
+  └─→ ProgramArea (UI)
+      ├─→ ProgramSequence (Execution)
+      └─→ BlockUI (UI)
+
+═══════════════════════════════════════════════════════════════════
+
+РЕКОМЕНДУЕМЫЙ ПОРЯДОК СОЗДАНИЯ АССЕТОВ:
+
+1️⃣  Создать Robot.prefab
+    └─ Cube + DirectionIndicator
+
+2️⃣  Создать RobotConfig.asset
+    └─ Настроить параметры
+
+3️⃣  Создать Canvas.prefab
+    └─ Canvas + EventSystem
+
+4️⃣  Создать BlockUI.prefab
+    └─ Panel + Image + Text + CanvasGroup
+
+5️⃣  Создать Sprites для команд
+    └─ 5 иконок разных цветов
+
+6️⃣  Создать BlockPalette.prefab
+    └─ ScrollView + Grid Layout
+
+7️⃣  Создать ProgramArea.prefab
+    └─ Panel + Vertical Layout
+
+8️⃣  Создать звуки (опционально)
+    └─ 5-7 звуковых файлов
+
+9️⃣  Собрать полную сцену в GameScene.unity
+    └─ Все компоненты + GameManager
+
+═══════════════════════════════════════════════════════════════════
+
+РАЗМЕР И МАСШТАБ:
+
+📊 Примерные объёмы:
+  • Всего папок: 15+
+  • Всего файлов: 50-80 (в зависимости от контента)
+  • Размер проекта: 200-500 MB (с исходниками)
+
+🎯 Для минимального прототипа:
+  • Обязательно: Scenes, Prefabs, ScriptableObjects, Scripts
+  • Опционально: Sprites, Sounds, Materials
+  • Можно добавить позже: Resources, Editor
+
+═══════════════════════════════════════════════════════════════════

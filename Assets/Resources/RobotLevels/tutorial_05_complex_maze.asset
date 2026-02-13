@@ -1,0 +1,322 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3effcfbc26d027488938f3c2488ec02, type: 3}
+  m_Name: tutorial_05_complex_maze
+  m_EditorClassIdentifier: Assembly-CSharp::LevelGridData
+  levelId: tutorial_05_complex_maze
+  levelName: 'Tutorial 5: Complex Maze'
+  difficulty: 3
+  hintText: 'Navigate the maze to reach the finish.
+
+
+    This level combines:
+
+    -
+    Obstacle avoidance
+
+    - Multiple turns
+
+    - Strategic planning'
+  gridWidth: 10
+  gridHeight: 10
+  terrain:
+  - position: {x: 0, y: 0}
+    terrainType: Ground
+  - position: {x: 0, y: 1}
+    terrainType: Ground
+  - position: {x: 0, y: 2}
+    terrainType: Ground
+  - position: {x: 0, y: 3}
+    terrainType: Ground
+  - position: {x: 0, y: 4}
+    terrainType: Ground
+  - position: {x: 0, y: 5}
+    terrainType: Ground
+  - position: {x: 0, y: 6}
+    terrainType: Ground
+  - position: {x: 0, y: 7}
+    terrainType: Ground
+  - position: {x: 0, y: 8}
+    terrainType: Ground
+  - position: {x: 0, y: 9}
+    terrainType: Ground
+  - position: {x: 1, y: 0}
+    terrainType: Ground
+  - position: {x: 1, y: 1}
+    terrainType: Ground
+  - position: {x: 1, y: 2}
+    terrainType: Ground
+  - position: {x: 1, y: 3}
+    terrainType: Ground
+  - position: {x: 1, y: 4}
+    terrainType: Ground
+  - position: {x: 1, y: 5}
+    terrainType: Ground
+  - position: {x: 1, y: 6}
+    terrainType: Ground
+  - position: {x: 1, y: 7}
+    terrainType: Ground
+  - position: {x: 1, y: 8}
+    terrainType: Ground
+  - position: {x: 1, y: 9}
+    terrainType: Ground
+  - position: {x: 2, y: 0}
+    terrainType: Ground
+  - position: {x: 2, y: 1}
+    terrainType: Ground
+  - position: {x: 2, y: 2}
+    terrainType: Ground
+  - position: {x: 2, y: 3}
+    terrainType: Ground
+  - position: {x: 2, y: 4}
+    terrainType: Ground
+  - position: {x: 2, y: 5}
+    terrainType: Ground
+  - position: {x: 2, y: 6}
+    terrainType: Ground
+  - position: {x: 2, y: 7}
+    terrainType: Ground
+  - position: {x: 2, y: 8}
+    terrainType: Ground
+  - position: {x: 2, y: 9}
+    terrainType: Ground
+  - position: {x: 3, y: 0}
+    terrainType: Ground
+  - position: {x: 3, y: 1}
+    terrainType: Ground
+  - position: {x: 3, y: 2}
+    terrainType: Ground
+  - position: {x: 3, y: 3}
+    terrainType: Ground
+  - position: {x: 3, y: 4}
+    terrainType: Ground
+  - position: {x: 3, y: 5}
+    terrainType: Ground
+  - position: {x: 3, y: 6}
+    terrainType: Ground
+  - position: {x: 3, y: 7}
+    terrainType: Ground
+  - position: {x: 3, y: 8}
+    terrainType: Ground
+  - position: {x: 3, y: 9}
+    terrainType: Ground
+  - position: {x: 4, y: 0}
+    terrainType: Ground
+  - position: {x: 4, y: 1}
+    terrainType: Ground
+  - position: {x: 4, y: 2}
+    terrainType: Ground
+  - position: {x: 4, y: 3}
+    terrainType: Ground
+  - position: {x: 4, y: 4}
+    terrainType: Ground
+  - position: {x: 4, y: 5}
+    terrainType: Ground
+  - position: {x: 4, y: 6}
+    terrainType: Ground
+  - position: {x: 4, y: 7}
+    terrainType: Ground
+  - position: {x: 4, y: 8}
+    terrainType: Ground
+  - position: {x: 4, y: 9}
+    terrainType: Ground
+  - position: {x: 5, y: 0}
+    terrainType: Ground
+  - position: {x: 5, y: 1}
+    terrainType: Ground
+  - position: {x: 5, y: 2}
+    terrainType: Ground
+  - position: {x: 5, y: 3}
+    terrainType: Ground
+  - position: {x: 5, y: 4}
+    terrainType: Ground
+  - position: {x: 5, y: 5}
+    terrainType: Ground
+  - position: {x: 5, y: 6}
+    terrainType: Ground
+  - position: {x: 5, y: 7}
+    terrainType: Ground
+  - position: {x: 5, y: 8}
+    terrainType: Ground
+  - position: {x: 5, y: 9}
+    terrainType: Ground
+  - position: {x: 6, y: 0}
+    terrainType: Ground
+  - position: {x: 6, y: 1}
+    terrainType: Ground
+  - position: {x: 6, y: 2}
+    terrainType: Ground
+  - position: {x: 6, y: 3}
+    terrainType: Ground
+  - position: {x: 6, y: 4}
+    terrainType: Ground
+  - position: {x: 6, y: 5}
+    terrainType: Ground
+  - position: {x: 6, y: 6}
+    terrainType: Ground
+  - position: {x: 6, y: 7}
+    terrainType: Ground
+  - position: {x: 6, y: 8}
+    terrainType: Ground
+  - position: {x: 6, y: 9}
+    terrainType: Ground
+  - position: {x: 7, y: 0}
+    terrainType: Ground
+  - position: {x: 7, y: 1}
+    terrainType: Ground
+  - position: {x: 7, y: 2}
+    terrainType: Ground
+  - position: {x: 7, y: 3}
+    terrainType: Ground
+  - position: {x: 7, y: 4}
+    terrainType: Ground
+  - position: {x: 7, y: 5}
+    terrainType: Ground
+  - position: {x: 7, y: 6}
+    terrainType: Ground
+  - position: {x: 7, y: 7}
+    terrainType: Ground
+  - position: {x: 7, y: 8}
+    terrainType: Ground
+  - position: {x: 7, y: 9}
+    terrainType: Ground
+  - position: {x: 8, y: 0}
+    terrainType: Ground
+  - position: {x: 8, y: 1}
+    terrainType: Ground
+  - position: {x: 8, y: 2}
+    terrainType: Ground
+  - position: {x: 8, y: 3}
+    terrainType: Ground
+  - position: {x: 8, y: 4}
+    terrainType: Ground
+  - position: {x: 8, y: 5}
+    terrainType: Ground
+  - position: {x: 8, y: 6}
+    terrainType: Ground
+  - position: {x: 8, y: 7}
+    terrainType: Ground
+  - position: {x: 8, y: 8}
+    terrainType: Ground
+  - position: {x: 8, y: 9}
+    terrainType: Ground
+  - position: {x: 9, y: 0}
+    terrainType: Ground
+  - position: {x: 9, y: 1}
+    terrainType: Ground
+  - position: {x: 9, y: 2}
+    terrainType: Ground
+  - position: {x: 9, y: 3}
+    terrainType: Ground
+  - position: {x: 9, y: 4}
+    terrainType: Ground
+  - position: {x: 9, y: 5}
+    terrainType: Ground
+  - position: {x: 9, y: 6}
+    terrainType: Ground
+  - position: {x: 9, y: 7}
+    terrainType: Ground
+  - position: {x: 9, y: 8}
+    terrainType: Ground
+  - position: {x: 9, y: 9}
+    terrainType: Ground
+  objects:
+  - position: {x: 3, y: 1}
+    objectTypeId: Wall
+    objectInstanceId: wall_v1_1
+  - position: {x: 6, y: 1}
+    objectTypeId: Wall
+    objectInstanceId: wall_v2_1
+  - position: {x: 3, y: 2}
+    objectTypeId: Wall
+    objectInstanceId: wall_v1_2
+  - position: {x: 6, y: 2}
+    objectTypeId: Wall
+    objectInstanceId: wall_v2_2
+  - position: {x: 3, y: 3}
+    objectTypeId: Wall
+    objectInstanceId: wall_v1_3
+  - position: {x: 6, y: 3}
+    objectTypeId: Wall
+    objectInstanceId: wall_v2_3
+  - position: {x: 3, y: 4}
+    objectTypeId: Wall
+    objectInstanceId: wall_v1_4
+  - position: {x: 6, y: 4}
+    objectTypeId: Wall
+    objectInstanceId: wall_v2_4
+  - position: {x: 3, y: 5}
+    objectTypeId: Wall
+    objectInstanceId: wall_v1_5
+  - position: {x: 6, y: 5}
+    objectTypeId: Wall
+    objectInstanceId: wall_v2_5
+  - position: {x: 3, y: 6}
+    objectTypeId: Wall
+    objectInstanceId: wall_v1_6
+  - position: {x: 6, y: 6}
+    objectTypeId: Wall
+    objectInstanceId: wall_v2_6
+  - position: {x: 3, y: 7}
+    objectTypeId: Wall
+    objectInstanceId: wall_v1_7
+  - position: {x: 6, y: 7}
+    objectTypeId: Wall
+    objectInstanceId: wall_v2_7
+  - position: {x: 3, y: 8}
+    objectTypeId: Wall
+    objectInstanceId: wall_v1_8
+  - position: {x: 6, y: 8}
+    objectTypeId: Wall
+    objectInstanceId: wall_v2_8
+  - position: {x: 1, y: 4}
+    objectTypeId: Wall
+    objectInstanceId: wall_h1_1
+  - position: {x: 1, y: 7}
+    objectTypeId: Wall
+    objectInstanceId: wall_h2_1
+  - position: {x: 2, y: 4}
+    objectTypeId: Wall
+    objectInstanceId: wall_h1_2
+  - position: {x: 2, y: 7}
+    objectTypeId: Wall
+    objectInstanceId: wall_h2_2
+  - position: {x: 4, y: 4}
+    objectTypeId: Wall
+    objectInstanceId: wall_h1_4
+  - position: {x: 4, y: 7}
+    objectTypeId: Wall
+    objectInstanceId: wall_h2_4
+  - position: {x: 5, y: 4}
+    objectTypeId: Wall
+    objectInstanceId: wall_h1_5
+  - position: {x: 5, y: 7}
+    objectTypeId: Wall
+    objectInstanceId: wall_h2_5
+  - position: {x: 7, y: 4}
+    objectTypeId: Wall
+    objectInstanceId: wall_h1_7
+  - position: {x: 7, y: 7}
+    objectTypeId: Wall
+    objectInstanceId: wall_h2_7
+  - position: {x: 8, y: 4}
+    objectTypeId: Wall
+    objectInstanceId: wall_h1_8
+  - position: {x: 8, y: 7}
+    objectTypeId: Wall
+    objectInstanceId: wall_h2_8
+  start:
+    position: {x: 0, y: 0}
+    direction: 1
+  finish:
+    position: {x: 9, y: 9}
+  visualLayerId: 1

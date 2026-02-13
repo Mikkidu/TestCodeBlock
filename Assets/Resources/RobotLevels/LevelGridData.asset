@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3effcfbc26d027488938f3c2488ec02, type: 3}
+  m_Name: LevelGridData
+  m_EditorClassIdentifier: Assembly-CSharp::LevelGridData
+  levelId: test_001
+  levelName: Test Leve
+  difficulty: 1
+  hintText: 
+  gridWidth: 5
+  gridHeight: 5
+  terrain:
+  - position: {x: 0, y: 0}
+    terrainType: Ground
+  - position: {x: 4, y: 1}
+    terrainType: Ground
+  - position: {x: 1, y: 3}
+    terrainType: Pit
+  - position: {x: 1, y: 4}
+    terrainType: Pit
+  - position: {x: 4, y: 0}
+    terrainType: Road
+  - position: {x: 3, y: 1}
+    terrainType: Road
+  - position: {x: 3, y: 0}
+    terrainType: Road
+  - position: {x: 3, y: 3}
+    terrainType: Ground
+  - position: {x: 3, y: 2}
+    terrainType: Road
+  - position: {x: 4, y: 2}
+    terrainType: Pit
+  - position: {x: 4, y: 3}
+    terrainType: Ground
+  - position: {x: 3, y: 4}
+    terrainType: Ground
+  - position: {x: 2, y: 4}
+    terrainType: Ground
+  - position: {x: 0, y: 3}
+    terrainType: Ground
+  - position: {x: 2, y: 1}
+    terrainType: Ground
+  - position: {x: 1, y: 0}
+    terrainType: Ground
+  - position: {x: 2, y: 0}
+    terrainType: Road
+  - position: {x: 0, y: 1}
+    terrainType: Ground
+  - position: {x: 0, y: 2}
+    terrainType: Ground
+  - position: {x: 1, y: 2}
+    terrainType: Ground
+  - position: {x: 0, y: 4}
+    terrainType: Ground
+  - position: {x: 4, y: 4}
+    terrainType: Ground
+  - position: {x: 2, y: 3}
+    terrainType: Ground
+  - position: {x: 2, y: 2}
+    terrainType: Road
+  - position: {x: 1, y: 1}
+    terrainType: Ground
+  objects:
+  - position: {x: 2, y: 0}
+    objectTypeId: Button
+    objectInstanceId: Button_5074
+  - position: {x: 3, y: 0}
+    objectTypeId: Button
+    objectInstanceId: Button_9637
+  - position: {x: 1, y: 0}
+    objectTypeId: Button
+    objectInstanceId: Button_3508
+  start:
+    position: {x: 0, y: 0}
+    direction: 1
+  finish:
+    position: {x: 1, y: 2}
+  visualLayerId: 1

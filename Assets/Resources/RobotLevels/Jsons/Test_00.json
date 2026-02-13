@@ -1,0 +1,210 @@
+{
+    "levelId": "Test_00",
+    "levelName": "Test_00",
+    "difficulty": 1,
+    "hintText": "",
+    "gridWidth": 8,
+    "gridHeight": 8,
+    "terrain": [
+        {
+            "position": {
+                "x": 1,
+                "y": 0
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 2,
+                "y": 0
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 3,
+                "y": 0
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 4,
+                "y": 0
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 4,
+                "y": 1
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 4,
+                "y": 2
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 4,
+                "y": 3
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 5,
+                "y": 0
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 6,
+                "y": 1
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 5,
+                "y": 2
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 5,
+                "y": 1
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 5,
+                "y": 3
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 2,
+                "y": 1
+            },
+            "terrainType": "Pit"
+        },
+        {
+            "position": {
+                "x": 2,
+                "y": 2
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 3,
+                "y": 2
+            },
+            "terrainType": "Road"
+        },
+        {
+            "position": {
+                "x": 5,
+                "y": 4
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 4,
+                "y": 4
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 3,
+                "y": 4
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 3,
+                "y": 3
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 2,
+                "y": 3
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 1,
+                "y": 3
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 1,
+                "y": 2
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 1,
+                "y": 1
+            },
+            "terrainType": "Ground"
+        },
+        {
+            "position": {
+                "x": 0,
+                "y": 1
+            },
+            "terrainType": "Ground"
+        }
+    ],
+    "objects": [
+        {
+            "position": {
+                "x": 3,
+                "y": 0
+            },
+            "objectTypeId": "Wall",
+            "objectInstanceId": "Wall_6908"
+        }
+    ],
+    "start": {
+        "position": {
+            "x": 0,
+            "y": 0
+        },
+        "direction": "North"
+    },
+    "finish": {
+        "position": {
+            "x": 4,
+            "y": 3
+        }
+    },
+    "version": "1.0",
+    "savedTimestamp": 639039821699100584
+}

@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3effcfbc26d027488938f3c2488ec02, type: 3}
+  m_Name: tutorial_04_buttons_doors
+  m_EditorClassIdentifier: Assembly-CSharp::LevelGridData
+  levelId: tutorial_04_buttons_doors
+  levelName: 'Tutorial 4: Buttons & Doors'
+  difficulty: 2
+  hintText: 'Press the BUTTON to open the DOOR.
+
+
+    Sequence:
+
+    1. Move to button
+
+    2.
+    Press button (action)
+
+    3. Move through door
+
+    4. Reach finish'
+  gridWidth: 8
+  gridHeight: 8
+  terrain:
+  - position: {x: 0, y: 2}
+    terrainType: Ground
+  - position: {x: 1, y: 2}
+    terrainType: Ground
+  - position: {x: 2, y: 2}
+    terrainType: Ground
+  - position: {x: 3, y: 2}
+    terrainType: Ground
+  - position: {x: 4, y: 2}
+    terrainType: Ground
+  - position: {x: 5, y: 2}
+    terrainType: Ground
+  - position: {x: 6, y: 2}
+    terrainType: Ground
+  - position: {x: 7, y: 2}
+    terrainType: Ground
+  - position: {x: 2, y: 2}
+    terrainType: Ground
+  - position: {x: 2, y: 3}
+    terrainType: Ground
+  - position: {x: 2, y: 4}
+    terrainType: Ground
+  objects:
+  - position: {x: 2, y: 4}
+    objectTypeId: Button
+    objectInstanceId: button_001
+  - position: {x: 5, y: 2}
+    objectTypeId: Door
+    objectInstanceId: door_001
+  start:
+    position: {x: 0, y: 2}
+    direction: 1
+  finish:
+    position: {x: 7, y: 2}
+  visualLayerId: 1

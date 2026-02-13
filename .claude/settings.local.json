@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(powershell -Command \"Get-ChildItem -Force | Select-Object -ExpandProperty Name\")",
+      "Bash(powershell -Command \"Get-ChildItem -Hidden -Name\")",
+      "Bash(powershell -Command \"Get-ChildItem -Recurse | Select-Object -ExpandProperty FullName | head -50\")",
+      "Bash(powershell -Command:*)",
+      "Bash(dotnet build:*)",
+      "Bash(rm:*)",
+      "Bash(Remove-Item \"D:\\\\Projects\\\\TestCodeBlock\\\\.Doc\\\\SnapApproachVariants.md\" -Force)",
+      "Bash(del \".\\\\.Doc\\\\SnapApproachVariants.md\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(ls -la \"D:\\\\Projects\\\\TestCodeBlock\\\\Assets\\\\Resources\" 2>/dev/null || echo \"Created directory\")",
+      "Bash(git log:*)"
+    ]
+  }
+}
