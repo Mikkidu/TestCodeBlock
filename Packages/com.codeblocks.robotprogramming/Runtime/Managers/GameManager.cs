@@ -1,10 +1,9 @@
-using PU.Promises;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using CodeBlocks.Core;
 using CodeBlocks.Data;
 using CodeBlocks.Execution;
 using CodeBlocks.Robot;
+using CodeBlocks.Reactions;
 using CodeBlocks.UI;
 using TMPro;
 using UnityEngine;
@@ -12,7 +11,7 @@ using UnityEngine.UI;
 
 namespace CodeBlocks.Managers
 {
-    public class GameManager : MonoBehaviour
+    public class GameManager : MonoBehaviour, IMovementDecisionProvider, ITargetTriggerProvider, ICellActivationProvider
     {
         [SerializeField] private RobotController robotController;
         [SerializeField] private CommandExecutor commandExecutor;
@@ -32,8 +31,12 @@ namespace CodeBlocks.Managers
         private ICommand currentExecutingCommand;
         private bool isProgramRunning = false;
         private bool isInitialized = false;
+        private bool levelCompleted = false;
 
         private GridPositionTracker robotPositionTracker;
+        private MovementDecisionService movementDecisionService;
+        private Vector2Int buttonVisualGridPosition;
+        private bool buttonVisualInitialized;
 
         public event Action<ICommand> OnCommandStarted;
         public event Action<ICommand> OnCommandCompleted;
@@ -53,24 +56,24 @@ namespace CodeBlocks.Managers
 
             if (robotController == null)
             {
-                robotController = FindObjectOfType<RobotController>();
+                robotController = FindFirstObjectByType<RobotController>();
             }
             robotPositionTracker = robotController.GetComponent<GridPositionTracker>();
 
 
             if (commandExecutor == null)
             {
-                commandExecutor = FindObjectOfType<CommandExecutor>();
+                commandExecutor = FindFirstObjectByType<CommandExecutor>();
             }
 
             if (blockPalette == null)
             {
-                blockPalette = FindObjectOfType<BlockPalette>();
+                blockPalette = FindFirstObjectByType<BlockPalette>();
             }
 
             if (programArea == null)
             {
-                programArea = FindObjectOfType<ProgramArea>();
+                programArea = FindFirstObjectByType<ProgramArea>();
             }
 
             // Initialize UI if buttons exist
@@ -100,7 +103,9 @@ namespace CodeBlocks.Managers
                 commandExecutor.OnCommandStarted += OnCommandStartedHandler;
                 commandExecutor.OnCommandCompleted += OnCommandCompletedHandler;
                 commandExecutor.OnProgramCompleted += OnProgramCompletedHandler;
+                commandExecutor.OnProgramStopped += OnProgramStoppedHandler;
                 commandExecutor.OnProgramFailed += OnProgramFailedHandler;
+                commandExecutor.MovementDecisionProvider = this;
             }
 
             // Populate palette
@@ -110,10 +115,10 @@ namespace CodeBlocks.Managers
             }
 
             levelRuntimeManager ??= FindFirstObjectByType<LevelRuntimeManager>();
+            movementDecisionService ??= new MovementDecisionService();
 
             robotPositionTracker.OnGridPositionChanged += OnRobotGridPositionChanged;
             robotPositionTracker.OnMovedToImpassableTerrain += OnRobotMovedToImpassable;
-            robotPositionTracker.OnReachedFinish += OnRobotReachedFinish;
 
             isInitialized = true;
             Debug.Log("GameManager: Initialized successfully");
@@ -126,6 +131,7 @@ namespace CodeBlocks.Managers
                 commandExecutor.OnCommandStarted -= OnCommandStartedHandler;
                 commandExecutor.OnCommandCompleted -= OnCommandCompletedHandler;
                 commandExecutor.OnProgramCompleted -= OnProgramCompletedHandler;
+                commandExecutor.OnProgramStopped -= OnProgramStoppedHandler;
                 commandExecutor.OnProgramFailed -= OnProgramFailedHandler;
             }
 
@@ -151,7 +157,11 @@ namespace CodeBlocks.Managers
             
             robotPositionTracker.OnGridPositionChanged -= OnRobotGridPositionChanged;
             robotPositionTracker.OnMovedToImpassableTerrain -= OnRobotMovedToImpassable;
-            robotPositionTracker.OnReachedFinish -= OnRobotReachedFinish;
+        }
+
+        private void LateUpdate()
+        {
+            UpdateButtonVisualByCurrentPosition();
         }
 
         private void OnRunButtonClicked()
@@ -161,6 +171,8 @@ namespace CodeBlocks.Managers
                 Debug.LogWarning("Program is already running!");
                 return;
             }
+
+            levelCompleted = false;
 
             // Stage 6: Execute via BlockUI connections instead of Command.Next
             BlockUIBase startBlock = programArea.GetFirstBlock();
@@ -183,25 +195,12 @@ namespace CodeBlocks.Managers
 
         private void OnStopButtonClicked()
         {
-            // NEW: Stop all loop commands
-            if (programArea != null)
-            {
-                List<BlockUIBase> blocks = programArea.GetBlocks();
-                foreach (var block in blocks)
-                {
-                    if (block.Command is Commands.LoopCommand loopCmd)
-                    {
-                        loopCmd.RequestStop();
-                    }
-                }
-            }
+            if (!isProgramRunning) return;
 
-            if (commandExecutor != null)
-            {
-                commandExecutor.Stop();
-            }
-            isProgramRunning = false;
-            UpdateStatusDisplay("Stopped");
+            levelCompleted = false;
+            commandExecutor?.Stop();
+            // isProgramRunning and robot reset happen in OnProgramStoppedHandler
+            // after the current command actually finishes
         }
 
         /// <summary>
@@ -262,7 +261,8 @@ namespace CodeBlocks.Managers
 
             // Position robot at start
             PositionRobotAtStart(level);
-            robotController.GetComponent<GridPositionTracker>().Initialize(levelRuntimeManager, level);
+            robotController.GetComponent<GridPositionTracker>().Initialize(levelRuntimeManager, levelRuntimeManager.CurrentLevel);
+            InitializeButtonVisualState();
 
             Debug.Log($"GameManager: Level '{level.levelName}' loaded successfully!");
         }
@@ -369,23 +369,17 @@ namespace CodeBlocks.Managers
 
         private void OnResetButtonClicked()
         {
-            // Stop program if running (reuses OnStopButtonClicked logic)
             if (isProgramRunning)
             {
+                // Stop will reset the robot in OnProgramStoppedHandler after the command finishes
                 OnStopButtonClicked();
             }
-
-            // Reset robot to start position
-            if (robotController != null)
+            else
             {
-                robotController.Reset();
+                robotController?.Reset();
+                robotPositionTracker?.ResetPosition();
+                UpdateStatusDisplay("Reset completed");
             }
-
-            // Reset position tracker
-            robotPositionTracker?.ResetPosition();
-
-            // Update UI
-            UpdateStatusDisplay("Reset completed");
         }
 
         private void OnClearButtonClicked()
@@ -425,44 +419,75 @@ namespace CodeBlocks.Managers
             UpdateStatusDisplay("Program completed!");
             ClearBlockHighlight();
         }
+
+        private void OnProgramStoppedHandler()
+        {
+            if (levelCompleted)
+            {
+                HandleLevelCompletion();
+                return;
+            }
+
+            string stopReason = commandExecutor != null ? commandExecutor.LastStopReason : string.Empty;
+            bool stoppedByReaction = !string.IsNullOrWhiteSpace(stopReason) &&
+                                     stopReason.StartsWith("Reaction:", StringComparison.OrdinalIgnoreCase);
+
+            if (stoppedByReaction)
+            {
+                isProgramRunning = false;
+                currentExecutingCommand = null;
+                ClearBlockHighlight();
+                string reactionName = stopReason.Substring("Reaction:".Length);
+                if (string.IsNullOrWhiteSpace(reactionName))
+                {
+                    UpdateStatusDisplay("Stopped by reaction");
+                }
+                else
+                {
+                    UpdateStatusDisplay($"Stopped by reaction: {reactionName}");
+                }
+                return;
+            }
+
+            // User-initiated stop: reset robot after the current command actually finished
+            isProgramRunning = false;
+            currentExecutingCommand = null;
+            ClearBlockHighlight();
+            robotController?.Reset();
+            robotPositionTracker?.ResetPosition();
+            UpdateStatusDisplay("Stopped");
+        }
         
         private void OnRobotReachedFinish()
         {
-            Debug.Log("🎉 GameManager: Robot reached finish!");
+            Debug.Log("GameManager: Robot reached finish!");
 
-            // Stop program execution
-            if (commandExecutor != null)
+            levelCompleted = true;
+
+            if (isProgramRunning && commandExecutor != null)
             {
                 commandExecutor.Stop();
+                // Victory handled in OnProgramStoppedHandler after chain terminates
             }
-
-            // Stop all loop commands
-            if (programArea != null)
+            else
             {
-                List<BlockUIBase> blocks = programArea.GetBlocks();
-                foreach (var block in blocks)
-                {
-                    if (block.Command is Commands.LoopCommand loopCmd)
-                    {
-                        loopCmd.RequestStop();
-                    }
-                }
+                // Program already ended naturally, handle victory directly
+                HandleLevelCompletion();
             }
+        }
 
+        private void HandleLevelCompletion()
+        {
             isProgramRunning = false;
             currentExecutingCommand = null;
+            ClearBlockHighlight();
+            UpdateStatusDisplay("Level completed!");
 
-            // Update UI
-            UpdateStatusDisplay("Level completed! 🎉");
             var stat = new LevelStatistics
             {
-                blocksUsed = programArea.GetBlocks().Count
+                blocksUsed = programArea?.GetBlocks().Count ?? 0
             };
             OnLevelFinished?.Invoke(stat);
-
-            // Clear block highlight
-            ClearBlockHighlight();
-
             PlayVictoryEffects();
         }
         
@@ -556,6 +581,7 @@ namespace CodeBlocks.Managers
         private void OnRobotGridPositionChanged(Vector2Int newPos, Vector2Int oldPos)
         {
             Debug.Log($"GameManager: Robot moved from {oldPos} to {newPos}");
+            ApplyButtonVisualTransition(oldPos, newPos);
 
             // Validate positioning accuracy
             if (robotPositionTracker != null && !robotPositionTracker.IsOnGrid())
@@ -566,8 +592,178 @@ namespace CodeBlocks.Managers
 
         private void OnRobotMovedToImpassable(Vector2Int gridPos)
         {
-            Debug.LogWarning($"GameManager: ⚠️ Robot moved to impassable terrain at {gridPos}");
+            Debug.LogWarning($"GameManager: Robot moved to impassable terrain at {gridPos}");
             // TODO: Handle game over, restart level, etc. (future task)
+        }
+
+        private void UpdateButtonVisualState(Vector2Int gridPos, bool isPressed)
+        {
+            if (levelRuntimeManager == null || levelRuntimeManager.CurrentLevel == null)
+                return;
+
+            GridObject obj = levelRuntimeManager.CurrentLevel.GetObjectAt(gridPos.x, gridPos.y);
+            if (obj == null || !string.Equals(obj.objectTypeId, "Button", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (!levelRuntimeManager.TryGetObjectInstance(gridPos, out GameObject instance) || instance == null)
+                return;
+
+            var visual = instance.GetComponent<Reactions.ButtonVisualState>();
+            if (visual != null)
+            {
+                visual.SetPressed(isPressed);
+            }
+        }
+
+        private void ApplyButtonVisualTransition(Vector2Int oldPos, Vector2Int newPos)
+        {
+            UpdateButtonVisualState(oldPos, false);
+            UpdateButtonVisualState(newPos, true);
+        }
+
+        private void InitializeButtonVisualState()
+        {
+            if (robotPositionTracker == null || !robotPositionTracker.IsInitialized)
+                return;
+
+            buttonVisualGridPosition = robotPositionTracker.GetCurrentGridPositionSnapshot();
+            buttonVisualInitialized = true;
+            UpdateButtonVisualState(buttonVisualGridPosition, true);
+        }
+
+        private void UpdateButtonVisualByCurrentPosition()
+        {
+            if (robotPositionTracker == null || !robotPositionTracker.IsInitialized)
+                return;
+
+            Vector2Int currentGrid = robotPositionTracker.GetCurrentGridPositionSnapshot();
+            if (!buttonVisualInitialized)
+            {
+                buttonVisualGridPosition = currentGrid;
+                buttonVisualInitialized = true;
+                UpdateButtonVisualState(currentGrid, true);
+                return;
+            }
+
+            if (currentGrid == buttonVisualGridPosition)
+                return;
+
+            ApplyButtonVisualTransition(buttonVisualGridPosition, currentGrid);
+            buttonVisualGridPosition = currentGrid;
+        }
+
+        public MoveDecision GetMoveDecision(MoveIntent intent)
+        {
+            if (movementDecisionService == null)
+            {
+                movementDecisionService = new MovementDecisionService();
+            }
+
+            if (levelRuntimeManager == null || robotPositionTracker == null || robotController == null)
+            {
+                return new MoveDecision(
+                    allowMove: false,
+                    reactionType: CellReactionType.None,
+                    phase: ReactionPhase.Start,
+                    speedModifier: 1f,
+                    targetGrid: Vector2Int.zero,
+                    targetObjectIds: null,
+                    obstacleTypeId: "None",
+                    surfaceTypeId: "None",
+                    debugReason: "Missing runtime manager or tracker"
+                );
+            }
+
+            CardinalDirection direction = GetRobotDirection();
+            if (intent == MoveIntent.Backward)
+            {
+                direction = Opposite(direction);
+            }
+
+            return movementDecisionService.DecideMove(levelRuntimeManager, robotPositionTracker, direction);
+        }
+
+        public void TriggerTargets(string[] targetObjectIds)
+        {
+            if (levelRuntimeManager == null || targetObjectIds == null || targetObjectIds.Length == 0)
+                return;
+
+            levelRuntimeManager.ToggleDoorStates(targetObjectIds);
+        }
+
+        public void ActivateCurrentCell()
+        {
+            if (levelRuntimeManager == null || robotPositionTracker == null)
+                return;
+
+            Vector2Int currentGrid = robotPositionTracker.GetCurrentGridPositionSnapshot();
+            GridObject obj = levelRuntimeManager.CurrentLevel != null
+                ? levelRuntimeManager.CurrentLevel.GetObjectAt(currentGrid.x, currentGrid.y)
+                : null;
+
+            if (obj == null)
+                return;
+
+            if (!levelRuntimeManager.TryGetObjectInstance(currentGrid, out GameObject instance) || instance == null)
+                return;
+
+            var context = new CodeBlocks.Core.ObjectReactionContext(obj, currentGrid, currentGrid);
+            var components = instance.GetComponents<Reactions.ObjectReactionComponent>();
+            if (components == null || components.Length == 0)
+                return;
+
+            foreach (var component in components)
+            {
+                if (component == null)
+                    continue;
+
+                if (component.CanHandle(obj.objectTypeId))
+                {
+                    var result = component.Evaluate(context);
+                    if (result.CompleteLevel)
+                    {
+                        TriggerReactionAnimationForObject(obj.objectTypeId);
+                        OnRobotReachedFinish();
+                        return;
+                    }
+
+                    if (result.TargetObjectIds != null && result.TargetObjectIds.Length > 0)
+                    {
+                        TriggerTargets(result.TargetObjectIds);
+                    }
+                }
+            }
+        }
+
+        private void TriggerReactionAnimationForObject(string obstacleTypeId)
+        {
+            if (robotController == null || string.IsNullOrWhiteSpace(obstacleTypeId))
+            {
+                return;
+            }
+
+            var profile = ReactionProfileResolver.Resolve(robotController, obstacleTypeId);
+            var animationId = ReactionAnimationResolver.ResolveTrigger(robotController, obstacleTypeId, profile.animationId);
+            robotController.TriggerReactionAnimation(animationId);
+        }
+
+        private CardinalDirection GetRobotDirection()
+        {
+            float angle = robotController.transform.eulerAngles.y;
+            int index = Mathf.RoundToInt(angle / 90f) % 4;
+            return (CardinalDirection)index;
+        }
+
+        private static CardinalDirection Opposite(CardinalDirection direction)
+        {
+            return direction switch
+            {
+                CardinalDirection.North => CardinalDirection.South,
+                CardinalDirection.East => CardinalDirection.West,
+                CardinalDirection.South => CardinalDirection.North,
+                CardinalDirection.West => CardinalDirection.East,
+                _ => CardinalDirection.North
+            };
         }
     }
 }

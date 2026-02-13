@@ -383,7 +383,7 @@ public class CodeBlocksLevelEditorWindow : EditorWindow
         if (currentLevel == null)
             return;
 
-        var visualizer = FindObjectOfType<GridVisualizer>();
+        var visualizer = FindFirstObjectByType<GridVisualizer>();
         if (visualizer != null && visualizer.levelData == currentLevel)
             return;
 

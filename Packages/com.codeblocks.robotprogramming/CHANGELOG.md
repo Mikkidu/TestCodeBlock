@@ -5,6 +5,44 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-02-12
+
+• ### Fixed
+
+  - Removed package dependency on SharedData from:
+      - Runtime/CodeBlocks.Runtime.asmdef
+      - Editor/CodeBlocks.Editor.asmdef
+  - Removed editor-only [StringEnum(...)] attribute from ReactionConfig.ReactionProfile.obstacleTypeId to eliminate hard coupling to external SharedData types.
+  - Kept obstacleTypeId field unchanged; runtime reaction logic and behavior remain the same.
+
+  ### Notes
+
+  - This is a compatibility fix for package integration in projects without SharedData.
+  - No gameplay or animation behavior changes.
+
+## [1.1.0] - 2026-02-12
+
+### Added
+  - Документация `REACTIONS_ANIMATIONS_GUIDE.md`:
+  - как устроен централизованный поток реакций/анимаций,
+  - как добавлять новые реакции через конфиги без правок C#,
+  - anti-pop рекомендации и чеклист для стабильного старта анимированных объектов.
+  - Data-driven `ReactionAnimationConfig` по `obstacleTypeId` (добавление новых реакций без изменений кода).
+  - Базовый дефолтный `ReactionAnimationConfig` для ключевых реакций:
+    - `FinishPoint`, `OutOfBounds`, `NoTerrain`, `Pit`, `Spike`.
+  - Поддержка тайминга запуска анимации реакции в `ReactionConfig.ReactionProfile`:
+    - `AnimationTriggerTiming.Start` (триггер до завершения перемещения),
+    - `AnimationTriggerTiming.End` (триггер после завершения перемещения).
+
+### Changed
+- Реакционные анимации переведены на централизованный resolver:
+  - сначала lookup в `ReactionAnimationConfig`,
+  - затем fallback на `ReactionProfile.animationId` (для обратной совместимости).
+  - Удалена кодовая `if/else`-цепочка выбора animation key в runtime resolver.
+  - Для остановки по реакциям введён явный `StopReason` (`Reaction:*`), чтобы результат реакции оставался на экране до ручного перезапуска.
+  - Улучшена пакетная загрузка `RobotConfig`:
+    - поддержаны пути `Resources/RobotConfig` и `Resources/Configs/RobotConfig`.
+
 ## [1.0.10] - 2026-02-03
 
 ### Fixed

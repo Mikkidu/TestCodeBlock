@@ -159,6 +159,14 @@ namespace CodeBlocks.Robot
 
             Debug.Log($"GridPositionTracker: Position reset to {currentGridPosition}");
         }
+
+        public Vector2Int GetCurrentGridPositionSnapshot()
+        {
+            if (!isInitialized || levelManager == null)
+                return currentGridPosition;
+
+            return levelManager.GetGridPosition(transform.position);
+        }
         
         private void OnDrawGizmos()
         {

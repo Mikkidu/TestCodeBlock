@@ -38,6 +38,11 @@ namespace CodeBlocks.UI
                 robotConfig = Resources.Load<RobotConfig>("RobotConfig");
             }
 
+            if (robotConfig == null)
+            {
+                robotConfig = Resources.Load<RobotConfig>("Configs/RobotConfig");
+            }
+
             blockFactory.robotConfig = robotConfig;
         }
 

@@ -16,6 +16,8 @@ namespace CodeBlocks.Commands
 
         public override IPromise Execute(IRobotController robot, ExecutionContext context)
         {
+            if (context.IsCancelled) return Deferred.Resolved();
+            
             return robot.TurnLeft();
         }
 

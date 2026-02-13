@@ -10,6 +10,9 @@ namespace CodeBlocks.Core
         public int CommandsExecuted { get; set; }
         public float StartTime { get; set; }
         public Dictionary<string, object> Variables { get; private set; }
+        public bool IsCancelled { get; private set; }
+        public string StopReason { get; private set; }
+        public CodeBlocks.Core.IMovementDecisionProvider MovementDecisionProvider { get; set; }
 
         public ExecutionContext()
         {
@@ -17,6 +20,14 @@ namespace CodeBlocks.Core
             CurrentCommandId = -1;
             CommandsExecuted = 0;
             StartTime = Time.time;
+            IsCancelled = false;
+            StopReason = string.Empty;
+        }
+
+        public void Cancel(string reason = "")
+        {
+            IsCancelled = true;
+            StopReason = reason ?? string.Empty;
         }
 
         // For future loop/conditional support
@@ -44,6 +55,8 @@ namespace CodeBlocks.Core
             Variables.Clear();
             CurrentCommandId = -1;
             CommandsExecuted = 0;
+            IsCancelled = false;
+            StopReason = string.Empty;
         }
     }
 }

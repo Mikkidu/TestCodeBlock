@@ -19,7 +19,14 @@ namespace CodeBlocks.Commands
 
         public override IPromise Execute(IRobotController robot, ExecutionContext context)
         {
-            return robot.MoveForward(distance);
+            return MoveCommandExecution.Execute(
+                robot,
+                context,
+                distance,
+                MoveIntent.Forward,
+                (units, speedMultiplier) => robot.MoveForward(units, speedMultiplier),
+                (units, speedMultiplier) => robot.MoveBackward(units, speedMultiplier)
+            );
         }
 
         public override string GetDisplayName() => $"Forward ({distance})";

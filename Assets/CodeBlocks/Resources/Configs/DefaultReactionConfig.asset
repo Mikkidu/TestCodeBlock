@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90f2257bb07ea834d88f17f0528e0f06, type: 3}
+  m_Name: DefaultReactionConfig
+  m_EditorClassIdentifier: CodeBlocks.Runtime::CodeBlocks.Reactions.ReactionConfig
+  isDefault: 1
+  reactionProfiles:
+  - obstacleTypeId: None
+    outcome: 0
+    animationId: 
+    animationTriggerTiming: 0
+    speedModifier: 1
+    distanceMultiplier: 1
+  - obstacleTypeId: Wall
+    outcome: 1
+    animationId: 
+    animationTriggerTiming: 0
+    speedModifier: 1
+    distanceMultiplier: 0.5
+  - obstacleTypeId: Door
+    outcome: 1
+    animationId: 
+    animationTriggerTiming: 0
+    speedModifier: 1
+    distanceMultiplier: 0.5
+  - obstacleTypeId: Pit
+    outcome: 3
+    animationId: 
+    animationTriggerTiming: 1
+    speedModifier: 1
+    distanceMultiplier: 1
+  - obstacleTypeId: Spike
+    outcome: 0
+    animationId: 
+    animationTriggerTiming: 0
+    speedModifier: 1
+    distanceMultiplier: 1
+  - obstacleTypeId: Finish
+    outcome: 0
+    animationId: 
+    animationTriggerTiming: 0
+    speedModifier: 1
+    distanceMultiplier: 1
+  - obstacleTypeId: Button
+    outcome: 0
+    animationId: 
+    animationTriggerTiming: 0
+    speedModifier: 1
+    distanceMultiplier: 1

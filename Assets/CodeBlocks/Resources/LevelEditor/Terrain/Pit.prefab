@@ -136,3 +136,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainBlockVisual
   gridPosition: {x: 0, y: 0}
   terrainType: 
+  visualRoot: {fileID: 4857365324743809653}

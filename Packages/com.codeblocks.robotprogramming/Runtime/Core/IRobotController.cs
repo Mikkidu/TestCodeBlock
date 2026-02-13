@@ -11,8 +11,8 @@ namespace CodeBlocks.Core
         bool IsExecuting { get; }
 
         // Movement methods return promises that resolve when animation completes
-        IPromise MoveForward(float units);
-        IPromise MoveBackward(float units);
+        IPromise MoveForward(float units, float speedMultiplier = 1f);
+        IPromise MoveBackward(float units, float speedMultiplier = 1f);
         IPromise TurnLeft();      // 90 degrees
         IPromise TurnRight();     // 90 degrees
 

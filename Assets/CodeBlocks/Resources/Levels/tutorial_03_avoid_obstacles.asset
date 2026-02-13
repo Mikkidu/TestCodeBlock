@@ -111,14 +111,12 @@ MonoBehaviour:
     terrainType: Ground
   - position: {x: 7, y: 7}
     terrainType: Ground
+  - position: {x: 3, y: 0}
+    terrainType: Pit
   objects:
   - position: {x: 3, y: 2}
     objectTypeId: Wall
     objectInstanceId: wall_3_2
-    parametersList: []
-  - position: {x: 3, y: 3}
-    objectTypeId: Wall
-    objectInstanceId: wall_3_3
     parametersList: []
   - position: {x: 3, y: 5}
     objectTypeId: Wall

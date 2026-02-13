@@ -2,7 +2,8 @@
     "name": "CodeBlocks.Editor",
     "rootNamespace": "",
     "references": [
-        "CodeBlocks.Runtime"
+        "CodeBlocks.Runtime",
+        "UnityFree"
     ],
     "includePlatforms": [
         "Editor"

@@ -17,7 +17,8 @@
       "Bash(test:*)",
       "Bash(git tag:*)",
       "Bash(git push:*)",
-      "Bash(del \".Doc\\\\Tasks\\\\18_LevelRobotIntegration.md\")"
+      "Bash(del \".Doc\\\\Tasks\\\\18_LevelRobotIntegration.md\")",
+      "Bash(Select-String -Pattern \"GridVisualizer|error\" -Context 0,2)"
     ]
   }
 }

@@ -9,6 +9,8 @@ namespace CodeBlocks.Core
         int Id { get; }
         CommandType Type { get; }
         ICommand Next { get; set; }
+        
+        IPromise executionPromise { get; }
 
         // Execute command and return promise that resolves when complete
         IPromise Execute(IRobotController robot, ExecutionContext context);

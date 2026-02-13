@@ -19,6 +19,8 @@ namespace CodeBlocks.Core
             Next = null;
         }
 
+        public IPromise executionPromise { get; protected set; }
+        
         public abstract IPromise Execute(IRobotController robot, ExecutionContext context);
 
         public virtual bool CanExecute(IRobotController robot)

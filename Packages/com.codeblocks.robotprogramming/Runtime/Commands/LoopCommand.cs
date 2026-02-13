@@ -12,7 +12,6 @@ namespace CodeBlocks.Commands
 
         private LoopBlockUI loopBlockUI;
         private int currentIteration = 0;
-        private bool shouldStop = false;
 
         public LoopCommand(int id) : base(id, new float[] { })
         {
@@ -28,9 +27,13 @@ namespace CodeBlocks.Commands
         /// </summary>
         public override IPromise Execute(IRobotController robot, ExecutionContext context)
         {
+            if (context != null && context.IsCancelled)
+            {
+                return Deferred.Resolved();
+            }
+
             Debug.Log("[LOOP] Entering from EXTERNAL input");
             currentIteration = 0;
-            shouldStop = false;
             return ExecuteIteration(robot, context);
         }
 
@@ -40,6 +43,11 @@ namespace CodeBlocks.Commands
         /// </summary>
         public IPromise ExecuteFromInternalInput(IRobotController robot, ExecutionContext context)
         {
+            if (context != null && context.IsCancelled)
+            {
+                return Deferred.Resolved();
+            }
+
             Debug.Log($"[LOOP] Returned from iteration {currentIteration}");
             return ExecuteIteration(robot, context);
         }
@@ -52,10 +60,10 @@ namespace CodeBlocks.Commands
             Debug.Log($"[LOOP] ExecuteIteration called (iteration {currentIteration})");
 
             // Check stop condition
-            if (shouldStop)
+            if (context.IsCancelled)
             {
                 Debug.Log($"[LOOP] Stopped after {currentIteration} iterations");
-                return ContinueAfterLoop(robot, context);
+                return Deferred.Resolved();
             }
 
             // Check loop condition (currently infinite - always true)
@@ -98,10 +106,22 @@ namespace CodeBlocks.Commands
         /// </summary>
         private IPromise ExecuteInnerChain(BlockUIBase startBlock, IRobotController robot, ExecutionContext context)
         {
+            if (context != null && context.IsCancelled)
+            {
+                return Deferred.Resolved();
+            }
+
             if (startBlock == null)
             {
                 Debug.Log("[LOOP] No inner blocks to execute");
-                return ExecuteIteration(robot, context);
+                return ScheduleNextIteration(robot, context);
+            }
+
+            // Internal connector can point back to the loop block itself.
+            // Handle it explicitly to avoid re-entering Execute() recursively.
+            if (loopBlockUI != null && ReferenceEquals(startBlock, loopBlockUI))
+            {
+                return ScheduleNextIteration(robot, context);
             }
 
             ICommand command = startBlock.Command;
@@ -117,7 +137,7 @@ namespace CodeBlocks.Commands
             command.Execute(robot, context)
                 .Done(() =>
                 {
-                    if (shouldStop)
+                    if (context.IsCancelled)
                     {
                         Debug.Log("[LOOP] Stop requested during iteration");
                         chainDeferred.Resolve();
@@ -128,6 +148,14 @@ namespace CodeBlocks.Commands
 
                         if (nextBlock != null)
                         {
+                            if (loopBlockUI != null && ReferenceEquals(nextBlock, loopBlockUI))
+                            {
+                                ScheduleNextIteration(robot, context)
+                                    .Done(() => chainDeferred.Resolve())
+                                    .Fail(ex => chainDeferred.Reject(ex));
+                                return;
+                            }
+
                             // There is next block in the chain inside the loop
                             ExecuteInnerChain(nextBlock, robot, context)
                                 .Done(() => chainDeferred.Resolve())
@@ -138,7 +166,7 @@ namespace CodeBlocks.Commands
                             // This was the last block inside the loop
                             // Return to loop start via ExecuteIteration
                             Debug.Log("[LOOP] Last block in chain, returning to loop");
-                            ExecuteIteration(robot, context)
+                            ScheduleNextIteration(robot, context)
                                 .Done(() => chainDeferred.Resolve())
                                 .Fail(ex => chainDeferred.Reject(ex));
                         }
@@ -150,10 +178,34 @@ namespace CodeBlocks.Commands
         }
 
         /// <summary>
+        /// Break recursive synchronous chain and continue loop on next frame.
+        /// Required because Promise.Done executes immediately for already-resolved promises.
+        /// </summary>
+        private IPromise ScheduleNextIteration(IRobotController robot, ExecutionContext context)
+        {
+            if (context != null && context.IsCancelled)
+            {
+                return Deferred.Resolved();
+            }
+
+            if (Timers.Instance == null)
+            {
+                return ExecuteIteration(robot, context);
+            }
+
+            return Timers.Instance.WaitOneFrame().Then(() => ExecuteIteration(robot, context));
+        }
+
+        /// <summary>
         /// Continue execution after exiting the loop
         /// </summary>
         private IPromise ContinueAfterLoop(IRobotController robot, ExecutionContext context)
         {
+            if (context != null && context.IsCancelled)
+            {
+                return Deferred.Resolved();
+            }
+
             BlockUIBase nextBlock = loopBlockUI.GetNextBlock();
 
             if (nextBlock != null && nextBlock.Command != null)
@@ -176,15 +228,6 @@ namespace CodeBlocks.Commands
             // Infinite loop - always true
             // Can exit only via Stop button or clearing the loop
             return true;
-        }
-
-        /// <summary>
-        /// Stop the loop (called via Stop button)
-        /// </summary>
-        public void RequestStop()
-        {
-            Debug.Log("[LOOP] Stop requested");
-            shouldStop = true;
         }
 
         public override string GetDisplayName() => "Loop (∞)";

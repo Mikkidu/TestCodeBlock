@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Unity.TextMeshPro",
-        "Promises"
+        "Promises",
+        "UnityFree"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

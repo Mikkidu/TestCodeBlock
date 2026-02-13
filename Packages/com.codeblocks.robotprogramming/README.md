@@ -4,13 +4,13 @@ Visual block-based programming system for robot control with drag-and-drop inter
 
 ## Features
 
-- **BlockUIBase Architecture** — unified connector system with Dictionary-based access
-- **Drag & Drop** — intuitive block placement with visual snap feedback
-- **Loop Blocks** — dynamic sizing with 4 connectors (external input/output + internal flow)
-- **Snap Manager** — simplified API with automatic connector detection
-- **Promise-based Execution** — sequential command execution without callback hell
-- **Level Editor** — visual editor with JSON export/import
-- **5 Tutorial Levels** — ready-to-use examples
+- **BlockUIBase Architecture** â€” unified connector system with Dictionary-based access
+- **Drag & Drop** â€” intuitive block placement with visual snap feedback
+- **Loop Blocks** â€” dynamic sizing with 4 connectors (external input/output + internal flow)
+- **Snap Manager** â€” simplified API with automatic connector detection
+- **Promise-based Execution** â€” sequential command execution without callback hell
+- **Level Editor** â€” visual editor with JSON export/import
+- **5 Tutorial Levels** â€” ready-to-use examples
 
 ## Installation
 
@@ -18,22 +18,22 @@ Visual block-based programming system for robot control with drag-and-drop inter
 
 **HTTPS (public access):**
 1. Open Unity Package Manager
-2. Click `+` → `Add package from git URL`
+2. Click `+` â†’ `Add package from git URL`
 3. Enter:
    ```
-   https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.10
+   https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.1.1
    ```
 
 **SSH (with configured SSH key):**
 ```
-git@github.com:mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.10
+git@github.com:mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.1.1
 ```
 
 ### Option 2: With Sample Assets (Recommended)
 
 1. **Add package via UPM** (as above)
 2. **Import Samples** (optional):
-   - Open Package Manager → "CodeBlocks Robot Programming"
+   - Open Package Manager â†’ "CodeBlocks Robot Programming"
    - Click "Samples" tab
    - Click "Import" next to "Sample Assets"
    - Assets will be copied to `Assets/CodeBlocks/`
@@ -62,9 +62,9 @@ Add to `Packages/manifest.json`:
 - Unity 6000.0 or later
 - TextMeshPro 4.0.0-pre.2+
 - UGUI 2.0.0+
-- **Promises Library** (IPromise, Deferred, Timers) — must be present in your project
+- **Promises Library** (IPromise, Deferred, Timers) â€” must be present in your project
 
-### ⚠️ Important: Promises Library
+### âš ï¸ Important: Promises Library
 
 This package requires a custom **Promises** library that is **NOT included** to avoid conflicts with your existing installation.
 
@@ -84,8 +84,8 @@ This package requires a custom **Promises** library that is **NOT included** to 
 ## Project Structure (Hybrid)
 
 ```
-Packages/com.codeblocks.robotprogramming/  ← Scripts only (auto-updates)
-Assets/CodeBlocks/                         ← Assets (prefabs, levels, configs)
+Packages/com.codeblocks.robotprogramming/  â† Scripts only (auto-updates)
+Assets/CodeBlocks/                         â† Assets (prefabs, levels, configs)
 ```
 
 **Note:** This package contains only scripts. Assets (prefabs, levels) should be copied separately to `Assets/CodeBlocks/` in your project.
@@ -144,8 +144,8 @@ public void ExecuteProgram()
 
 ### Block Types
 
-- **BlockUI** — simple command blocks (Move, Turn, Wait)
-- **LoopBlockUI** — loop blocks with 4 connectors
+- **BlockUI** â€” simple command blocks (Move, Turn, Wait)
+- **LoopBlockUI** â€” loop blocks with 4 connectors
 
 ### Key Classes
 
@@ -179,8 +179,8 @@ var primaryOut = block.GetPrimaryOutput(); // virtual
 
 ### Create Level
 
-1. Open: `Window → CodeBlocks → Level Editor`
-2. Create: `Create → CodeBlocks → Level Grid Data`
+1. Open: `Window â†’ CodeBlocks â†’ Level Editor`
+2. Create: `Create â†’ CodeBlocks â†’ Level Grid Data`
 3. Edit in Scene View
 4. Export: `Export to JSON`
 
@@ -196,9 +196,10 @@ if (level != null)
 
 ## Documentation
 
-- [MIGRATION_GUIDE_HYBRID.md](MIGRATION_GUIDE_HYBRID.md) — How to migrate from Assets to Package
-- [PRIVATE_REPO_GUIDE.md](PRIVATE_REPO_GUIDE.md) — Using with private repositories
-- [CHANGELOG.md](CHANGELOG.md) — Version history
+- [MIGRATION_GUIDE_HYBRID.md](MIGRATION_GUIDE_HYBRID.md) - How to migrate from Assets to Package
+- [PRIVATE_REPO_GUIDE.md](PRIVATE_REPO_GUIDE.md) - Using with private repositories
+- [REACTIONS_ANIMATIONS_GUIDE.md](REACTIONS_ANIMATIONS_GUIDE.md) - Архитектура реакций/анимаций, тайминг Start/End, package-checklist и anti-pop
+- [CHANGELOG.md](CHANGELOG.md) - Version history
 
 ## License
 
@@ -214,3 +215,5 @@ See [LICENSE](https://github.com/mikkiducher/TestCodeBlock/blob/master/LICENSE)
 Current: **1.0.2**
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+

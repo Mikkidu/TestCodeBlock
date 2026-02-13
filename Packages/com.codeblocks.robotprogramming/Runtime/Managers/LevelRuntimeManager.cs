@@ -1,5 +1,7 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
+using CodeBlocks.Reactions;
 
 namespace CodeBlocks.Managers
 {
@@ -17,6 +19,8 @@ namespace CodeBlocks.Managers
         private GameObject backgroundInstance;
         private Dictionary<Vector2Int, GameObject> terrainInstances = new Dictionary<Vector2Int, GameObject>();
         private Dictionary<Vector2Int, GameObject> objectInstances = new Dictionary<Vector2Int, GameObject>();
+        private Dictionary<string, GameObject> objectInstancesById = new Dictionary<string, GameObject>();
+        private Dictionary<string, GridObject> objectsById = new Dictionary<string, GridObject>();
         private GameObject startVisual;
         private GameObject finishVisual;
 
@@ -36,7 +40,8 @@ namespace CodeBlocks.Managers
 
             ClearLevel();
 
-            currentLevel = levelData;
+            // Work on a runtime copy so door/button state changes never mutate source assets.
+            currentLevel = CreateRuntimeLevelCopy(levelData);
 
             // Calculate level origin to center the grid at world origin (0,0,0)
             // For a grid of size W×H, the grid spans from levelOrigin to levelOrigin + (W*cellSize, H*cellSize)
@@ -90,6 +95,98 @@ namespace CodeBlocks.Managers
             }
 
             Debug.Log($"LevelRuntimeManager: Level '{currentLevel.levelName}' loaded successfully!");
+        }
+
+        private static LevelGridData CreateRuntimeLevelCopy(LevelGridData source)
+        {
+            var copy = ScriptableObject.CreateInstance<LevelGridData>();
+            copy.levelId = source.levelId;
+            copy.levelName = source.levelName;
+            copy.difficulty = source.difficulty;
+            copy.hintText = source.hintText;
+            copy.gridWidth = source.gridWidth;
+            copy.gridHeight = source.gridHeight;
+            copy.visualLayerId = source.visualLayerId;
+
+#pragma warning disable CS0618
+            if (source.start != null)
+            {
+                copy.start = new StartPoint
+                {
+                    position = source.start.position,
+                    direction = source.start.direction
+                };
+            }
+
+            if (source.finish != null)
+            {
+                copy.finish = new FinishPoint
+                {
+                    position = source.finish.position
+                };
+            }
+#pragma warning restore CS0618
+
+            if (source.terrain != null)
+            {
+                copy.terrain = new TerrainCell[source.terrain.Length];
+                for (int i = 0; i < source.terrain.Length; i++)
+                {
+                    var terrain = source.terrain[i];
+                    if (terrain == null)
+                    {
+                        copy.terrain[i] = null;
+                        continue;
+                    }
+
+                    copy.terrain[i] = new TerrainCell
+                    {
+                        position = terrain.position,
+                        terrainType = terrain.terrainType
+                    };
+                }
+            }
+            else
+            {
+                copy.terrain = Array.Empty<TerrainCell>();
+            }
+
+            if (source.objects != null)
+            {
+                copy.objects = new GridObject[source.objects.Length];
+                for (int i = 0; i < source.objects.Length; i++)
+                {
+                    copy.objects[i] = CloneGridObject(source.objects[i]);
+                }
+            }
+            else
+            {
+                copy.objects = Array.Empty<GridObject>();
+            }
+
+            return copy;
+        }
+
+        private static GridObject CloneGridObject(GridObject source)
+        {
+            if (source == null)
+                return null;
+
+            var copy = new GridObject
+            {
+                position = source.position,
+                objectTypeId = source.objectTypeId,
+                objectInstanceId = source.objectInstanceId
+            };
+
+            if (source.parameters != null)
+            {
+                foreach (var kv in source.parameters)
+                {
+                    copy.AddParameter(kv.Key, kv.Value);
+                }
+            }
+            return copy;
         }
         
         private void InstantiateTerrain(Vector2Int gridPos, string terrainType)
@@ -147,6 +244,40 @@ namespace CodeBlocks.Managers
             instance.transform.SetParent(levelContainer.transform);
             instance.name = $"{objectTypeId}_{gridPos.x}_{gridPos.y}";
 
+            AttachReactionComponents(instance, gridObject);
+
+            var objectVisual = instance.GetComponent<ObjectBlockVisual>();
+            if (objectVisual != null)
+            {
+                string instanceId = gridObject != null ? gridObject.objectInstanceId : null;
+                if (string.IsNullOrWhiteSpace(instanceId))
+                {
+                    instanceId = $"{objectTypeId}_{gridPos.x}_{gridPos.y}";
+                    if (gridObject != null)
+                    {
+                        gridObject.objectInstanceId = instanceId;
+                    }
+                }
+                objectVisual.SetObject(gridPos, objectTypeId, instanceId);
+            }
+
+            if (gridObject != null)
+            {
+                string instanceId = gridObject.objectInstanceId;
+                if (!string.IsNullOrWhiteSpace(instanceId))
+                {
+                    objectInstancesById[instanceId] = instance;
+                    objectsById[instanceId] = gridObject;
+                }
+
+                if (string.Equals(gridObject.objectTypeId, "Door", StringComparison.OrdinalIgnoreCase) &&
+                    !string.IsNullOrWhiteSpace(instanceId))
+                {
+                    bool isOpen = IsDoorOpen(gridObject);
+                    ApplyDoorVisualState(instanceId, isOpen);
+                }
+            }
+
             Vector3 worldPos = GetWorldPosition(gridPos);
             worldPos.x += cellSize * 0.5f; // Center of cell
             worldPos.z += cellSize * 0.5f;
@@ -192,6 +323,12 @@ namespace CodeBlocks.Managers
 
         public void ClearLevel()
         {
+            if (currentLevel != null)
+            {
+                Destroy(currentLevel);
+                currentLevel = null;
+            }
+
             if (levelContainer != null)
             {
                 Destroy(levelContainer);
@@ -206,9 +343,123 @@ namespace CodeBlocks.Managers
 
             terrainInstances.Clear();
             objectInstances.Clear();
+            objectInstancesById.Clear();
+            objectsById.Clear();
             startVisual = null;
             finishVisual = null;
-            currentLevel = null;
+        }
+
+        public bool TryGetObjectInstance(Vector2Int gridPos, out GameObject instance)
+        {
+            return objectInstances.TryGetValue(gridPos, out instance);
+        }
+
+        public bool TryGetObjectInstanceById(string objectInstanceId, out GameObject instance)
+        {
+            return objectInstancesById.TryGetValue(objectInstanceId, out instance);
+        }
+
+        public bool TryGetObjectDataById(string objectInstanceId, out GridObject obj)
+        {
+            return objectsById.TryGetValue(objectInstanceId, out obj);
+        }
+
+        public void ToggleDoorStates(string[] targetObjectIds)
+        {
+            if (targetObjectIds == null)
+                return;
+
+            for (int i = 0; i < targetObjectIds.Length; i++)
+            {
+                string id = targetObjectIds[i];
+                if (string.IsNullOrWhiteSpace(id))
+                    continue;
+
+                if (TryGetObjectDataById(id, out var obj))
+                {
+                    bool wasOpen = IsDoorOpen(obj);
+                    ToggleDoorState(obj);
+                    ApplyDoorVisualState(id, !wasOpen);
+                }
+                else
+                {
+                    Debug.LogWarning($"LevelRuntimeManager: Door target id not found: {id}");
+                }
+            }
+        }
+
+        private static void ToggleDoorState(GridObject obj)
+        {
+            if (obj == null || obj.parameters == null)
+                return;
+
+            bool isOpen = false;
+            if (obj.parameters.TryGetValue("isOpen", out var isOpenValue))
+            {
+                isOpen = IsTrue(isOpenValue);
+            }
+            else if (obj.parameters.TryGetValue("state", out var stateValue))
+            {
+                isOpen = string.Equals(stateValue, "open", StringComparison.OrdinalIgnoreCase);
+            }
+
+            bool newOpen = !isOpen;
+            obj.parameters["isOpen"] = newOpen ? "true" : "false";
+            obj.parameters["state"] = newOpen ? "open" : "closed";
+            obj.SyncParameters();
+        }
+
+        private static bool IsDoorOpen(GridObject obj)
+        {
+            if (obj == null || obj.parameters == null)
+                return false;
+
+            if (obj.parameters.TryGetValue("isOpen", out var isOpenValue))
+            {
+                return IsTrue(isOpenValue);
+            }
+
+            if (obj.parameters.TryGetValue("state", out var stateValue))
+            {
+                return string.Equals(stateValue, "open", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private void ApplyDoorVisualState(string objectInstanceId, bool isOpen)
+        {
+            if (!TryGetObjectInstanceById(objectInstanceId, out GameObject instance) || instance == null)
+                return;
+
+            var visual = instance.GetComponent<DoorVisualState>();
+            if (visual != null)
+            {
+                visual.SetOpen(isOpen);
+                return;
+            }
+
+            var renderers = instance.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] != null)
+                    renderers[i].enabled = !isOpen;
+            }
+
+            var colliders = instance.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                if (colliders[i] != null)
+                    colliders[i].enabled = !isOpen;
+            }
+        }
+
+        private static bool IsTrue(string value)
+        {
+            return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(value, "yes", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(value, "on", StringComparison.OrdinalIgnoreCase);
         }
         
         public Vector3 GetWorldPosition(Vector2Int gridPos)
@@ -291,6 +542,49 @@ namespace CodeBlocks.Managers
             Gizmos.color = Color.white;
             Gizmos.DrawLine(Vector3.zero - Vector3.right * 0.3f, Vector3.zero + Vector3.right * 0.3f);
             Gizmos.DrawLine(Vector3.zero - Vector3.forward * 0.3f, Vector3.zero + Vector3.forward * 0.3f);
+        }
+
+        private static void AttachReactionComponents(GameObject instance, GridObject gridObject)
+        {
+            if (instance == null || gridObject == null)
+                return;
+
+            if (instance.GetComponent<ObjectReactionComponent>() != null)
+                return;
+
+            if (string.IsNullOrEmpty(gridObject.objectTypeId))
+                return;
+
+            if (string.Equals(gridObject.objectTypeId, "Wall", StringComparison.OrdinalIgnoreCase))
+            {
+                instance.AddComponent<WallReaction>();
+                return;
+            }
+
+            if (string.Equals(gridObject.objectTypeId, "Door", StringComparison.OrdinalIgnoreCase))
+            {
+                instance.AddComponent<DoorReaction>();
+                if (instance.GetComponent<DoorVisualState>() == null)
+                {
+                    instance.AddComponent<DoorVisualState>();
+                }
+                return;
+            }
+
+            if (string.Equals(gridObject.objectTypeId, "Button", StringComparison.OrdinalIgnoreCase))
+            {
+                instance.AddComponent<ButtonReaction>();
+                if (instance.GetComponent<ButtonVisualState>() == null)
+                {
+                    instance.AddComponent<ButtonVisualState>();
+                }
+                return;
+            }
+
+            if (string.Equals(gridObject.objectTypeId, "FinishPoint", StringComparison.OrdinalIgnoreCase))
+            {
+                instance.AddComponent<FinishReaction>();
+            }
         }
     }
 }

@@ -30,7 +30,8 @@
 - Blockers: None
 - Detailed plan: `.Doc/Tasks/5_ExecutionSystem.md`
 
-## #6 UI - BlockUI и BlockFactory
+## #6 UI - BlockUI и BlockFactory\
+
 - Status: [✓] Done (2025-12-23)
 - Description: Создать визуальное представление блока с drag-drop функционалом
 - Blockers: None
@@ -587,6 +588,200 @@
 
 ---
 
+## #25 Collision System & Cell Reactions - Система реакции робота на типы клеток
+
+**Status**: 🟡 **IN PROGRESS** (обновлено 2026-02-11)
+**Priority**: 🔴 CRITICAL (gameplay foundation)
+**Depends On**: #21 ✓ (Finish Detection), #19 ✓ (Robot Grid Integration), #20 ✓ (GridPositionTracker), #24 ✓ (InitLevel), #26 ✓ (InputPoint)
+
+**Текущий статус (2026-02-11)**
+- ✅ Завершён текущий подэтап по двери/кнопке:
+  - дверь корректно блокирует в закрытом состоянии и пропускает в открытом;
+  - повторные нажатия кнопки корректно переключают состояние двери;
+  - задержка реакции двери после нажатия кнопки устранена;
+  - визуал кнопки синхронизирован с проходом робота через центр клетки.
+- ✅ Завершён подэтап по движению/решениям:
+  - добавлен исход `StopProgramAtTarget` (шаг в целевую клетку + остановка программы);
+  - добавлена реакция для `NoTerrain` (вход в клетку, остановка без авто-ресета);
+  - финиш активируется через `ActivateCurrentCell()` при заходе на `FinishPoint`.
+- ✅ Завершены технические правки устойчивости:
+  - `GridPositionTracker` инициализируется от runtime-level (`levelRuntimeManager.CurrentLevel`);
+  - runtime-копия `LevelGridData` удаляется в `ClearLevel()` (без утечки инстансов).
+- ✅ Проверка: `dotnet build Assembly-CSharp.csproj` проходит без ошибок.
+- Что сделали: базовая система принятия решения перед шагом, конфиги реакций, реакции для объектов (стена/кнопка/дверь), визуальные состояния двери/кнопки, активация кнопки по входу/выходу, фиксы object ids и ReturnToOrigin.
+- Что сделали (новое): базовая анимация робота `Idle/Move` подключена через `Animator` bool-параметр (`moveBoolParameter`, по умолчанию `IsMoving`).
+- Что сделали (новое): визуал кнопки обновляется по world-позиции робота, поэтому нажатие/отжатие происходит на середине перехода между клетками.
+- Что сделали (новое): runtime-состояние дверей изолировано от source-ассета уровня (работа через runtime-копию `LevelGridData`).
+- Что проверили: ручная проверка в Unity — двери/кнопки переключаются, проход сквозь открытую дверь корректный. `dotnet build Assembly-CSharp.csproj` — без ошибок.
+- Что дальше:
+  - перенести и закрепить реакцию `Pit` как объектную/клеточную реакцию с анимацией падения робота;
+  - добавить реакцию `Finish` в тот же pipeline реакций (единый путь обработки, без special-case логики);
+  - после этого перейти к `Spike` и финальной унификации профилей реакций.
+
+### **Описание**
+
+Полная система реакции робота на типы клеток поля. В зависимости от типа клетки происходит разная реакция (движение, отскок, падение, поломка, плавание, скольжение). Система модульна и легко расширяется.
+
+**Типы клеток и реакции**:
+- **Floor/Road** → Move (нормальное движение) ✅
+- **Wall** → Bounce (откат назад, продолжить программу)
+- **Pit** → Fall (падение, STOP программу)
+- **Spike** → Break (поломка, STOP программу)
+- **Water** → Swim (замедление 0.5x, продолжить)
+- **Ice** → Slide (ускорение 1.5x, продолжить)
+- **Finish** → (финиш, STOP программу) ✅ (из #21)
+
+### **Архитектура**
+
+**Модульная система на основе IReaction интерфейса:**
+```
+CellReactionType enum
+    ↓
+CellReaction struct (type, duration, curve, speedMod)
+    ↓
+CellReactionConfig (ScriptableObject, маппинг terrain → reaction)
+    ↓
+IReaction интерфейс + 5 реализаций
+    (BounceReaction, FallReaction, BreakReaction, SwimReaction, SlideReaction)
+    ↓
+CellReactionProcessor (монобиха, слушает OnGridPositionChanged)
+    ↓
+RobotAnimationConfig (параметры всех анимаций)
+    ↓
+RobotController (методы PlayFallAnimation, PlayBreakAnimation, etc.)
+```
+
+**Интеграция:**
+- GridPositionTracker → CellReactionProcessor → IReaction.Execute()
+- GameManager слушает события процессора для UI сообщений
+- Приоритеты: Finish > Pit/Spike > Wall > Water/Ice > Floor
+
+### **4 Блока реализации (исходное задание)**
+
+**Блок 1: Cell Type System (2 часа)** ✅ План готов
+- 📄 `.Doc/Tasks/25_Block1_CellTypeSystem.md`
+- Создать CellReactionType enum (Move, Bounce, Fall, Break)
+- Создать CellReaction struct с параметрами анимации
+- Создать CellReactionConfig ScriptableObject
+- Обновить LevelGridData.GetCellReaction(), IsPassable()
+- Создать конфиг DefaultCellReactions.asset
+
+**Блок 2: Finish Logic Improvements (2 часа)** ✅ План готов
+- 📄 `.Doc/Tasks/25_Block2_FinishLogicImprovement.md`
+- Убедиться что Finish имеет приоритет 1 в GridPositionTracker
+- CommandExecutor проверяет context.IsCancelled ПЕРЕД каждой командой
+- GameManager разделяет: levelCompleted (Finish) vs programStopped (User)
+- При Finish программа ВСЕГДА останавливается немедленно
+- Integration тесты на приоритеты
+
+**Блок 3: Wall Collision & Bounce Reaction (3 часа)** ✅ План готов
+- 📄 `.Doc/Tasks/25_Block3_WallCollision.md`
+- Создать IReaction интерфейс
+- Реализовать BounceReaction (визуальная анимация отката)
+- Создать CellReactionProcessor компонент
+- Интегрировать с GridPositionTracker.OnGridPositionChanged
+- При Wall: откат на исходную позицию, программа продолжается
+
+**Блок 4: Pit/Spike Logic (2 часа)** ✅ План готов
+- 📄 `.Doc/Tasks/25_Block4_PitSpikeLogic.md` (переименована с AnimationMapping)
+- Реализовать FallReaction (Pit): анимация падения, STOP программу
+- Реализовать BreakReaction (Spike): анимация мигания, STOP программу
+- Добавить методы в RobotController: PlayFallAnimation(), PlayBreakAnimation()
+- Интегрировать обе реакции в CellReactionProcessor
+
+**Блок 5: Integration & Testing (2 часа)** ✅ План готов
+- 📄 `.Doc/Tasks/25_Block5_Integration.md`
+- Интегрировать CellReactionProcessor с GameManager
+- Убедиться в правильности приоритетов: Finish > Pit/Spike > Wall
+- Создать тестовый уровень с Wall, Pit, Spike
+- Создать префабы для Pit и Spike (если не существуют)
+- Полное тестирование на всех 5 tutorial уровнях
+
+### **Файловая структура**
+
+```
+Packages/com.codeblocks.robotprogramming/Runtime/Collision/
+├── CellReactionType.cs                 (Блок 1)
+├── CellReaction.cs                     (Блок 1)
+├── CellReactionConfig.cs               (Блок 1)
+├── IReaction.cs                        (Блок 3)
+├── CellReactionProcessor.cs            (Блок 3)
+├── Reactions/
+│   ├── BounceReaction.cs              (Блок 3)
+│   ├── FallReaction.cs                (Блок 4)
+│   ├── BreakReaction.cs               (Блок 4)
+│   ├── SwimReaction.cs                (Блок 4)
+│   └── SlideReaction.cs               (Блок 4)
+└── CollisionDebugger.cs               (опционально)
+
+Runtime/Robot/
+└── RobotAnimationConfig.cs            (Блок 4)
+
+Tests/Editor/
+├── BounceReactionTests.cs             (Блок 3)
+├── AnimationReactionTests.cs          (Блок 4)
+└── FullCollisionSystemTests.cs        (Блок 5)
+
+Assets/CodeBlocks/Resources/
+├── Configs/DefaultCellReactions.asset (Блок 1)
+├── Levels/test_all_traps.asset        (Блок 5)
+└── LevelEditor/Terrain/
+    ├── Pit.prefab                     (Блок 5)
+    ├── Spike.prefab                   (Блок 5)
+    ├── Water.prefab                   (Блок 5)
+    └── Ice.prefab                     (Блок 5)
+
+Docs/
+├── Tasks/25_CollisionSystem.md        (главный план)
+├── Tasks/25_Block1_CellTypeSystem.md  (детали блока 1)
+├── Tasks/25_Block2_FinishLogicImprovement.md
+├── Tasks/25_Block3_WallCollision.md
+├── Tasks/25_Block4_AnimationMapping.md
+├── Tasks/25_Block5_Integration.md
+└── Architecture_CollisionSystem.md    (архитектура всей системы)
+```
+
+### **Критерии принятия**
+
+- [ ] ✅ Все 5 блоков спланированы с детальными шагами
+- [ ] ✅ Архитектура соответствует реальной кодовой базе
+- [ ] ✅ Система полностью модульна (IReaction интерфейс)
+- [ ] Финиш ВСЕГДА прерывает программу (даже если команды в очереди)
+- [ ] Стена вызывает bounce (откат), программа продолжается
+- [ ] Яма вызывает fall (падение), программа ОСТАНАВЛИВАЕТСЯ
+- [ ] Шип вызывает break (поломка), программа ОСТАНАВЛИВАЕТСЯ
+- [ ] Все реакции асинхронны (IPromise based)
+- [ ] Интегрировано с GridPositionTracker, GameManager, RobotController
+- [ ] Полное тестирование на всех 5 tutorial уровнях
+- [ ] Документация полная и понятна
+- [ ] Код готов к интеграции в play-united
+
+### **Timeline**
+
+- Блоки 1-2: ~4 часа (базовая инфраструктура)
+- Блоки 3-4: ~5 часов (реакции и анимации)
+- Блок 5: ~2 часа (интеграция и тестирование)
+- **Всего: ~11 часов** (вместо 13)
+
+### **Документация**
+
+**Начало**: 📄 [.Doc/Tasks/25_PLANNING_SUMMARY.md](Tasks/25_PLANNING_SUMMARY.md) ← ИТОГОВЫЙ ПЛАН (7900 слов, всё объяснено)
+
+**Основные документы**:
+- 📄 [.Doc/Tasks/25_CollisionSystem.md](Tasks/25_CollisionSystem.md) - главный план задачи (архитектура, 5 блоков)
+
+**По блокам**:
+- 📄 [.Doc/Tasks/25_Block1_CellTypeSystem.md](Tasks/25_Block1_CellTypeSystem.md) - Блок 1 (2ч): Типы клеток, конфиги
+- 📄 [.Doc/Tasks/25_Block2_FinishLogicImprovement.md](Tasks/25_Block2_FinishLogicImprovement.md) - Блок 2 (2ч): Финиш приоритет
+- 📄 [.Doc/Tasks/25_Block3_WallCollision.md](Tasks/25_Block3_WallCollision.md) - Блок 3 (3ч): Wall collision, Bounce
+- 📄 [.Doc/Tasks/25_Block4_AnimationMapping.md](Tasks/25_Block4_AnimationMapping.md) - Блок 4 (3ч): Анимации, ловушки
+- 📄 [.Doc/Tasks/25_Block5_Integration.md](Tasks/25_Block5_Integration.md) - Блок 5 (3ч): Интеграция, тестирование
+
+**Архитектура**:
+- 📄 `.Doc/Architecture_CollisionSystem.md` - (будет создана при разработке)
+
+---
+
 ## #23 BUG: Позиционирование сброшенных блоков в локальных координатах
 - Status: [✓] Done (2026-01-23)
 - Priority: 🔴 CRITICAL
@@ -779,3 +974,21 @@
 - [ ] UPM пакет v1.1.0
 
 **Detailed plan**: [.Doc/Tasks/26_ChainManagement_ProgramAreaManager.md](Tasks/26_ChainManagement_ProgramAreaManager.md)
+
+## #27 Рефактор механизма остановки — CancellationToken через ExecutionContext
+- Status: [✓] Done (2026-02-05)
+- Description: Убран глобальный `CommandBase.ShouldStopExecution` и прямые сигналы Manager→Command. Остановка теперь через `ExecutionContext.IsCancelled`, контролируемый `CommandExecutor`.
+- Blockers: None
+- Краткий план:
+  - ExecutionContext: добавить `IsCancelled`, `Cancel()`, сброс в `Clear()`.
+  - CommandBase/ICommand: удалить `ShouldStopExecution` и `RequestStop()`.
+  - CommandExecutor: хранить контекст, `Stop()` ставит cancel и резюмирует паузу; `OnProgramStopped` после завершения текущей команды.
+  - Команды (Move/Turn/Wait/Loop): заменить проверки на `context.IsCancelled`.
+  - GameManager: перенос логики остановки в `OnProgramStoppedHandler`, разделение stop по финишу и по кнопке.
+  - Cleanup: удалить прямые вызовы stop из менеджера и лишние using.
+- Key changes:
+  - ExecutionContext: `+IsCancelled`, `+Cancel()`.
+  - CommandExecutor: `Stop()` не сбрасывает `IsRunning` синхронно; `OnProgramStopped` после завершения текущей команды.
+  - GameManager: `OnProgramStoppedHandler`, `levelCompleted`.
+- Commit: cacc43c
+- Detailed plan: `.Doc/Tasks/27_CancellationToken_Refactor.md`

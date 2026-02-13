@@ -57,11 +57,17 @@ MonoBehaviour:
   - position: {x: 2, y: 4}
     objectTypeId: Button
     objectInstanceId: button_001
-    parametersList: []
+    parametersList:
+    - key: targetId
+      value: door_001
   - position: {x: 5, y: 2}
     objectTypeId: Door
     objectInstanceId: door_001
-    parametersList: []
+    parametersList:
+    - key: isOpen
+      value: false
+    - key: state
+      value: closed
   - position: {x: 0, y: 2}
     objectTypeId: StartPoint
     objectInstanceId: start_tutorial_04_buttons_doors

@@ -14,6 +14,13 @@ namespace CodeBlocks.Robot
         [Header("Animation")]
         public AnimationCurve movementCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
         public AnimationCurve rotationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        public string moveBoolParameter = "IsMoving";
+        public string turnLeftTriggerParameter = "TurnLeft";
+        public string turnRightTriggerParameter = "TurnRight";
+
+        [Header("Reactions")]
+        public CodeBlocks.Reactions.ReactionConfig reactionConfig;
+        public CodeBlocks.Reactions.ReactionAnimationConfig reactionAnimationConfig;
 
         [Header("Visuals")]
         public float directionIndicatorLength = 0.5f;

@@ -11,8 +11,6 @@ namespace CodeBlocks.UI
 {
     public class BlockUI : BlockUIBase
     {
-        public event Action OnAlignmentComplete;
-
         // Connection points - assign in Inspector
         [SerializeField] private RectTransform inputPointVisual;
         [SerializeField] private List<RectTransform> outputPointsVisuals = new List<RectTransform>();

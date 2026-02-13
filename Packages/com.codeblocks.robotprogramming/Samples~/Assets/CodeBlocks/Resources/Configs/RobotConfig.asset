@@ -64,6 +64,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  moveBoolParameter: IsMoving
+  turnLeftTriggerParameter: TurnLeft
+  turnRightTriggerParameter: TurnRight
+  reactionAnimationConfig: {fileID: 11400000, guid: c87773fd9f5f4d9fbf166f34d0f02ea8, type: 2}
   directionIndicatorLength: 0.5
   robotColor: {r: 1, g: 1, b: 1, a: 1}
   directionColor: {r: 1, g: 0, b: 0, a: 1}

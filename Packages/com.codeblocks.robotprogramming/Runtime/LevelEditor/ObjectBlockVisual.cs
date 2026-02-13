@@ -14,6 +14,16 @@ public class ObjectBlockVisual : MonoBehaviour
         UpdateVisuals();
     }
 
+    public void SetObject(Vector2Int pos, string typeId, string instanceId)
+    {
+        gridPosition = pos;
+        objectTypeId = typeId;
+        objectInstanceId = string.IsNullOrWhiteSpace(instanceId)
+            ? typeId + "_" + Random.Range(1000, 9999)
+            : instanceId;
+        UpdateVisuals();
+    }
+
     private void UpdateVisuals()
     {
         // Update visuals based on object type

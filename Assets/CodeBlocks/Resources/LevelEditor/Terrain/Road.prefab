@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainBlockVisual
   gridPosition: {x: 0, y: 0}
   terrainType: 
+  visualRoot: {fileID: 4334932520751473790}
 --- !u!1 &7709541662063502766
 GameObject:
   m_ObjectHideFlags: 0

@@ -19,6 +19,8 @@ namespace CodeBlocks.Commands
 
         public override IPromise Execute(IRobotController robot, ExecutionContext context)
         {
+            if (context.IsCancelled) return Deferred.Resolved();
+            
             // Use the Timers singleton to wait
             return Timers.Instance.Wait(duration, progress =>
             {

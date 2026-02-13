@@ -14,6 +14,7 @@ namespace CodeBlocks.Execution
         public event Action<ICommand> OnCommandStarted;
         public event Action<ICommand> OnCommandCompleted;
         public event Action OnProgramCompleted;
+        public event Action OnProgramStopped;
         public event Action<Exception> OnProgramFailed;
 
         private bool isPaused;
@@ -21,6 +22,10 @@ namespace CodeBlocks.Execution
         private Deferred pauseDeferred;
         private int totalCommands;
         private int executedCommands;
+        private ExecutionContext currentContext;
+        private string lastStopReason;
+        public IMovementDecisionProvider MovementDecisionProvider { get; set; }
+        public string LastStopReason => lastStopReason;
 
         public IPromise ExecuteProgram(ICommand startCommand, IRobotController robot)
         {
@@ -37,7 +42,12 @@ namespace CodeBlocks.Execution
             // Count total commands
             totalCommands = CountCommands(startCommand);
 
-            ExecutionContext context = new ExecutionContext();
+            ExecutionContext context = new ExecutionContext
+            {
+                MovementDecisionProvider = MovementDecisionProvider
+            };
+            lastStopReason = string.Empty;
+            currentContext = context;
             return ExecuteCommandChain(startCommand, robot, context);
         }
 
@@ -64,12 +74,25 @@ namespace CodeBlocks.Execution
             // Count total commands by following connections
             totalCommands = CountCommandsFromBlock(startBlock);
 
-            ExecutionContext context = new ExecutionContext();
+            ExecutionContext context = new ExecutionContext
+            {
+                MovementDecisionProvider = MovementDecisionProvider
+            };
+            lastStopReason = string.Empty;
+            currentContext = context;
             return ExecuteBlockChain(startBlock, robot, context);
         }
 
         private IPromise ExecuteCommandChain(ICommand command, IRobotController robot, ExecutionContext context)
         {
+            if (context.IsCancelled)
+            {
+                lastStopReason = context.StopReason;
+                IsRunning = false;
+                OnProgramStopped?.Invoke();
+                return Deferred.Resolved();
+            }
+
             if (command == null)
             {
                 // End of chain
@@ -92,6 +115,15 @@ namespace CodeBlocks.Execution
                 .Then(() => command.Execute(robot, context))
                 .Done(() =>
                 {
+                    if (context.IsCancelled)
+                    {
+                        lastStopReason = context.StopReason;
+                        IsRunning = false;
+                        OnProgramStopped?.Invoke();
+                        chainDeferred.Resolve();
+                        return;
+                    }
+
                     executedCommands++;
                     context.CommandsExecuted++;
                     Progress = totalCommands > 0 ? (float)executedCommands / totalCommands : 1f;
@@ -165,6 +197,14 @@ namespace CodeBlocks.Execution
         /// </summary>
         private IPromise ExecuteBlockChain(BlockUIBase block, IRobotController robot, ExecutionContext context)
         {
+            if (context.IsCancelled)
+            {
+                lastStopReason = context.StopReason;
+                IsRunning = false;
+                OnProgramStopped?.Invoke();
+                return Deferred.Resolved();
+            }
+
             if (block == null)
             {
                 // End of chain
@@ -195,6 +235,15 @@ namespace CodeBlocks.Execution
                 .Then(() => command.Execute(robot, context))
                 .Done(() =>
                 {
+                    if (context.IsCancelled)
+                    {
+                        lastStopReason = context.StopReason;
+                        IsRunning = false;
+                        OnProgramStopped?.Invoke();
+                        chainDeferred.Resolve();
+                        return;
+                    }
+
                     executedCommands++;
                     context.CommandsExecuted++;
                     Progress = totalCommands > 0 ? (float)executedCommands / totalCommands : 1f;
@@ -237,13 +286,18 @@ namespace CodeBlocks.Execution
 
         public void Stop()
         {
-            IsRunning = false;
-            isPaused = false;
-            currentCommand = null;
+            if (!IsRunning) return;
 
+            if (currentContext != null)
+            {
+                currentContext.Cancel("UserStop");
+            }
+
+            // Resume if paused so the chain can reach the IsCancelled check
+            isPaused = false;
             if (pauseDeferred != null)
             {
-                pauseDeferred.Reject(new Exception("Execution stopped"));
+                pauseDeferred.Resolve();
                 pauseDeferred = null;
             }
         }
