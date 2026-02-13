@@ -337,6 +337,7 @@ namespace CodeBlocks.UI
 
             // Create physical connection: dragging block's OUTPUT → target INPUT
             outputPoint.connectedTo = targetInput;
+            targetInput.connectedTo = outputPoint;
             
             Vector2 targetPosition = targetInput.GetWorldPosition();
             Vector2 currentOutputWorldPos = outputPoint.GetWorldPosition();
@@ -345,11 +346,12 @@ namespace CodeBlocks.UI
             RectTransform blockRect = draggingBlock.GetComponent<RectTransform>();
             if (blockRect != null && offset.magnitude > 0.1f)
             {
-                blockRect.position = new Vector3(
+                Vector3 newWorldPos = new Vector3(
                     blockRect.position.x + offset.x,
                     blockRect.position.y + offset.y,
                     blockRect.position.z
                 );
+                draggingBlock.SetWorldPosition(newWorldPos);
                 Debug.Log($"  → Shift {draggingBlock.gameObject.name} by ({offset.x:F1}, {offset.y:F1})");
             }
             

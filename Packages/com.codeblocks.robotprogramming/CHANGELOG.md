@@ -5,6 +5,37 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-01-23
+
+### Added
+- **SetWorldPosition(Vector3)** - Public method for proper block positioning in local coordinates
+  - Automatically converts world position to local parent coordinates using RectTransformUtility
+  - Works correctly with nested UI hierarchies (Loop containers, nested ProgramArea)
+  - No parameters required - retrieves RectTransform, parent, and Canvas automatically
+  - Caching ready for future optimizations
+
+### Fixed
+- **Block positioning in nested UI containers** (#23)
+  - AlignToInputConnection() now uses SetWorldPosition() for correct local coordinate conversion
+  - ApplySnap() converts coordinates properly when inserting blocks into chains
+  - ApplySnapToInput() handles coordinate conversion for start-of-chain insertion
+  - SetParent calls now use correct false parameter after SetWorldPosition establishes local coordinates
+  - Blocks position correctly in Loop containers and nested ProgramArea structures
+
+- **Loop block input chain alignment**
+  - Fixed cascade alignment when Loop OUTPUT is connected to another block's INPUT
+  - AlignToInputConnection cascade now properly propagates through Loop boundary
+  - Blocks connected after Loop correctly align when internal blocks are added
+
+- **Loop container resizing**
+  - RecalculateSize() now called after block extraction from Loop
+  - Loop container properly shrinks when internal blocks are removed or dragged out
+  - BypassBlockInLoop() triggers parent Loop size recalculation
+
+### Changed
+- SetParent parameter optimization: true → false in SnapManager after SetWorldPosition calls
+- Improved coordinate handling for blocks in all UI hierarchy levels
+
 ## [1.0.3] - 2026-01-22
 
 ### Added

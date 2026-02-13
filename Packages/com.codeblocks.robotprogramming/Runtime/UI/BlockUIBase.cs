@@ -213,16 +213,48 @@ namespace CodeBlocks.UI
                   RectTransform rect = GetComponent<RectTransform>();
                   if (rect != null)
                   {
-                      rect.position = new Vector3(
+                      Vector3 newWorldPos = new Vector3(
                           rect.position.x + offset.x,
                           rect.position.y + offset.y,
                           rect.position.z
                       );
+                      SetWorldPosition(newWorldPos);
                       Debug.Log($"[ALIGN] {gameObject.name} aligned to {connectedOutput.parentBlock?.gameObject.name}");
                   }
               }
               OnAlignmentComplete?.Invoke();
               GetNextBlock()?.AlignToInputConnection();
+          }
+          
+          /// <summary>
+          /// Set block position in world space, converting to local coordinates of parent.
+          /// Used for alignment during snap and drag operations.
+          /// Automatically retrieves necessary components, no parameters required.
+          /// </summary>
+          public void SetWorldPosition(Vector3 worldPosition)
+          {
+              RectTransform rect = transform as RectTransform;
+              if (rect == null) return;
+
+              // Get parent and canvas
+              RectTransform parentRect = rect.parent as RectTransform;
+              if (parentRect == null || rootCanvas == null || rootCanvas.worldCamera == null)
+              {
+                  // Fallback: if no parent or canvas, use direct positioning
+                  rect.position = worldPosition;
+                  return;
+              }
+
+              // Convert world position to local coordinates of parent
+              Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(rootCanvas.worldCamera, worldPosition);
+
+              RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                  parentRect,
+                  screenPos,
+                  rootCanvas.worldCamera,
+                  out Vector2 localPos);
+
+              rect.anchoredPosition = localPos;
           }
 
           #endregion

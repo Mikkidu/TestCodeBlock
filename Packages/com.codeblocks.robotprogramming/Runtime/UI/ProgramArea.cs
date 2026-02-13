@@ -73,20 +73,7 @@ namespace CodeBlocks.UI
             if (newBlock != null)
             {
                 // Position the new block at the drop point
-                RectTransform newBlockRect = newBlock.transform as RectTransform;
-                RectTransform programAreaRect = transform as RectTransform;
-
-                if (newBlockRect != null && programAreaRect != null)
-                {
-                    // Convert world position to local position within ProgramArea
-                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                        programAreaRect,
-                        eventData.position,
-                        eventData.pressEventCamera,
-                        out Vector2 localPoint);
-
-                    newBlockRect.anchoredPosition = localPoint;
-                }
+                newBlock.SetWorldPosition(eventData.position);
 
                 // Add the new block to the program
                 AddBlockToProgram(newBlock);

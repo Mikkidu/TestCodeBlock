@@ -164,7 +164,9 @@ namespace CodeBlocks.UI
 
             if (parentBlock.Command.Type == CommandType.Loop)
             {
-                ((LoopBlockUI)parentBlock).ConnectInnerConnectors();
+                var loopBlock = (LoopBlockUI)parentBlock;
+                loopBlock.ConnectInnerConnectors();
+                loopBlock.AlignToInputConnection();
             }
 
             if (programArea != null)
@@ -201,7 +203,7 @@ namespace CodeBlocks.UI
 
         public void ReturnToOriginalPosition()
         {
-            transform.SetParent(originalParent, false);
+            transform.SetParent(originalParent, true);
             transform.SetSiblingIndex(originalSiblingIndex);
         }
     }

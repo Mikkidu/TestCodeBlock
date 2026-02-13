@@ -536,6 +536,40 @@
 - Solution Doc: [.Doc/BACKLOG_DragFromLoop_Solution.md](BACKLOG_DragFromLoop_Solution.md)
 - **NEXT:** Протестировать в Unity Editor
 
+## #23 BUG: Позиционирование сброшенных блоков в локальных координатах
+- Status: [✓] Done (2026-01-23)
+- Priority: 🔴 CRITICAL
+- Description: Исправить баг позиционирования при перетаскивании блоков. Сброшенные блоки должны позиционироваться в локальных координатах родителя правильно, независимо от размера родителя (вложенные Loop, разные ProgramArea и т.д.)
+- Root Cause:
+  - AlignToInputConnection(), ApplySnap(), ApplySnapToInput() используют мировые координаты (rect.position)
+  - При SetParent(parent, true) мировая позиция сохраняется, но локальные координаты не конвертируются
+  - Работает только когда родитель == rootCanvas, ломается для вложенных контейнеров
+- Impact:
+  - Блоки позиционируются неправильно в Loop контейнерах
+  - Визуальное несовпадение между положением сброса и финальной позицией
+  - Требует расширения родителя на весь канвас (невозможно для вложенных контейнеров)
+- Solution Approach:
+  - Создать публичный метод `SetWorldPosition(Vector3 worldPosition)` в BlockUIBase
+    - Инкапсулирует всю логику конвертации координат
+    - Сам получает доступ к RectTransform, parentRect, Canvas
+    - Использует RectTransformUtility для конвертации: мировая → экранная → локальная
+  - Заменить прямое манипулирование rect.position на вызовы SetWorldPosition()
+  - Применить в трех методах: AlignToInputConnection(), ApplySnap(), ApplySnapToInput()
+  - Исправить SetParent вызовы в SnapManager.cs (изменить true на false после SetWorldPosition)
+- Implementation Steps:
+  1. Создать SetWorldPosition() в BlockUIBase
+  2. Рефакторинг AlignToInputConnection() для использования SetWorldPosition()
+  3. Рефакторинг ApplySnap() для использования SetWorldPosition()
+  4. Рефакторинг ApplySnapToInput() для использования SetWorldPosition()
+  5. Исправить SetParent параметры в SnapManager.cs (строки 303, 365)
+  6-7. Комплексное тестирование и валидация
+- Key Files to Fix:
+  - `BlockUIBase.cs` - добавить SetWorldPosition(), обновить AlignToInputConnection()
+  - `SnapManager.cs:217-307` - ApplySnap() использует SetWorldPosition()
+  - `SnapManager.cs:310-369` - ApplySnapToInput() использует SetWorldPosition()
+  - `SnapManager.cs:303, 365` - изменить SetParent параметры с true на false
+- Detailed plan: [.Doc/Tasks/23_BlockLocalCoordinateFix.md](Tasks/23_BlockLocalCoordinateFix.md)
+
 ---
 
 ## ЗАДАЧИ НА БУДУЩЕЕ (BACKLOG)
@@ -571,3 +605,31 @@
 ### Loop блок улучшения
 - [ ] Проверить что при перетаскивании блоки внутри цикла тоже перетаскиваются
 - [ ] Реализовать правильное удаление блоков из цикла
+
+### BUG: Loop выравнивание цепочки при присоединении OUTPUT к INPUT другого блока
+- **Описание:** Если присоединить Loop с его OUTPUT к INPUT другого блока (схема: A → [Loop] → B), то при добавлении новых блоков во внутреннюю область Loop подстройка (AlignToInputConnection) не передаётся дальше к блоку B.
+- **Как воспроизвести:**
+  1. Создать цепь: [BlockA] → [Loop] → [BlockB]
+  2. Добавить блок внутрь Loop (например BlockC внутрь Loop)
+  3. BlockC выравнивается правильно к InternalOutput Loop
+  4. Но BlockB НЕ выравнивается (стоит на старой позиции)
+- **Ожидаемое поведение:** После добавления BlockC, цепочка выравнивания должна быть:
+  - BlockC.AlignToInputConnection() → выравняется к InternalOutput
+  - Loop.AlignToInputConnection() → выравняется к BlockA.output
+  - BlockB.AlignToInputConnection() → выравняется к Loop.output
+- **Контрапример (работает правильно):** Если INPUT Loop присоединен к OUTPUT BlockA (наоборот: A → Loop → B), подстройка работает правильно, все блоки выравниваются.
+- **Root Cause:** Вероятно в цепочке вызовов GetNextBlock() → AlignToInputConnection() для вложенных Loop структур
+- **Priority:** 🟠 HIGH (влияет на удобство редактирования сложных программ)
+
+### BUG: Размер Loop контейнера не пересчитывается при вытаскивании блоков
+- **Описание:** При вытаскивании блока из внутренней области Loop контейнер Loop не пересчитывает свой размер. Loop остаётся большим даже если блоки внутри удалены.
+- **Как воспроизвести:**
+  1. Создать Loop с несколькими блоками внутри
+  2. Потащить один из внутренних блоков наружу (или удалить из цепи)
+  3. Loop контейнер остаётся с прежней высотой (не сжимается)
+- **Ожидаемое поведение:** После вытаскивания блока должен вызваться Loop.RecalculateSize() для пересчёта высоты контейнера
+- **Current Fix:** Loop.RecalculateSize() вызывается при добавлении блока (ProgramArea.AddBlockToProgram), но не при удалении/вытаскивании
+- **Related Code:**
+  - BlockDragHandler.OnBeginDrag() - вызывает BypassBlockInLoop() но не RecalculateSize()
+  - LoopBlockUI.RecalculateSize() - динамический расчёт высоты на основе contenSize
+- **Priority:** 🟠 HIGH (влияет на визуальный интерфейс)
