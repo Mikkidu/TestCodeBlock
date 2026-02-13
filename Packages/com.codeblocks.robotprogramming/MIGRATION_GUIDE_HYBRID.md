@@ -95,7 +95,20 @@ TestCodeBlock/
 | `Assets/Scripts/RobotProgramming/Managers/*.cs` | `Packages/.../Runtime/Managers/` |
 | `Assets/Scripts/RobotProgramming/Robot/*.cs` | `Packages/.../Runtime/Robot/` |
 | `Assets/Scripts/RobotProgramming/UI/*.cs` | `Packages/.../Runtime/UI/` |
-| `Assets/Scripts/Promises/*.cs` | `Packages/.../Runtime/Promises/` |
+
+### ⚠️ ВАЖНО: Promises — НЕ переносить!
+
+**`Assets/Scripts/Promises/` остаётся на месте!**
+
+Почему:
+- Promises — общая библиотека (используется в других местах)
+- Уже есть в основном проекте
+- Чтобы избежать конфликтов дубликатов
+
+Что проверить:
+- ✅ `Assets/Scripts/Promises/Promises.asmdef` существует
+- ✅ CodeBlocks.Runtime.asmdef имеет ссылку на "Promises"
+- ✅ Promises остаётся в Assets/Scripts/Promises/
 
 ### Level Editor Runtime скрипты
 

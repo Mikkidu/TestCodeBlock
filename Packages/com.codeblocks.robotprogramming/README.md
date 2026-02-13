@@ -39,6 +39,24 @@ Add to `Packages/manifest.json`:
 - Unity 6000.0 or later
 - TextMeshPro 4.0.0-pre.2+
 - UGUI 2.0.0+
+- **Promises Library** (IPromise, Deferred, Timers) — must be present in your project
+
+### ⚠️ Important: Promises Library
+
+This package requires a custom **Promises** library that is **NOT included** to avoid conflicts with your existing installation.
+
+**Required classes:**
+- `IPromise`, `IPromise<T>`, `IPromise<T1, T2>`
+- `Deferred`, `Deferred<T>`, `Deferred<T1, T2>`
+- `Timers` (MonoBehaviour singleton)
+
+**Where to get:**
+- If migrating from TestCodeBlock: Keep your `Assets/Scripts/Promises/` folder
+- If starting fresh: Copy `Promises/` folder from the TestCodeBlock repository
+
+**Assembly Definition:**
+- Your Promises must have an assembly definition named `Promises`
+- The CodeBlocks.Runtime.asmdef references this assembly
 
 ## Project Structure (Hybrid)
 

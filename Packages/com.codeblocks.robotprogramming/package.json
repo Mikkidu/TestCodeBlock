@@ -1,6 +1,6 @@
 {
   "name": "com.codeblocks.robotprogramming",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "CodeBlocks Robot Programming",
   "description": "Visual block-based programming system for robot control with drag-and-drop interface, snap connections, and loop blocks.",
   "unity": "6000.0",
@@ -22,5 +22,8 @@
   "dependencies": {
     "com.unity.textmeshpro": "4.0.0-pre.2",
     "com.unity.ugui": "2.0.0"
+  },
+  "prerequisites": {
+    "Promises": "Custom Promises library (IPromise, Deferred, Timers) must be present in the project. This is NOT included in the package to avoid conflicts."
   }
 }

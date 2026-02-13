@@ -53,6 +53,19 @@ Assets → Create → Folder → "CodeBlocks"
 - Resources/Configs/
 ```
 
+### 1.5. Переименовать namespace (РЕКОМЕНДУЕТСЯ)
+
+**Зачем:** Соответствие названию пакета, избежать breaking changes в будущем
+
+```
+RobotProgramming.* → CodeBlocks.*
+LevelEditor → CodeBlocks.LevelEditor
+```
+
+**⚠️ Promises НЕ трогать!** (остаётся `namespace Promises`)
+
+**Инструкция:** `NAMESPACE_RENAME_GUIDE.md` (5-10 минут)
+
 ### 2. Перенести скрипты → Packages/
 
 **⚠️ Через Unity drag-drop для сохранения .meta!**
@@ -60,9 +73,13 @@ Assets → Create → Folder → "CodeBlocks"
 | Откуда | Куда |
 |--------|------|
 | `Assets/Scripts/RobotProgramming/*` | `Packages/.../Runtime/...` |
-| `Assets/Scripts/Promises/*` | `Packages/.../Runtime/Promises/` |
 | `Assets/Scripts/LevelEditor/*` (runtime) | `Packages/.../Runtime/LevelEditor/` |
 | `Assets/Scripts/LevelEditor/Editor/*` | `Packages/.../Editor/LevelEditor/` |
+
+**⚠️ ВАЖНО: `Assets/Scripts/Promises/` — НЕ переносить!**
+- Promises остаётся в Assets/Scripts/Promises/
+- Это внешняя зависимость (уже есть в основном проекте)
+- CodeBlocks.Runtime.asmdef ссылается на "Promises" assembly
 
 Подробная таблица: см. `MIGRATION_GUIDE_HYBRID.md`
 

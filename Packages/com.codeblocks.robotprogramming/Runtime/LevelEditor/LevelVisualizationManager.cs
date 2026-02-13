@@ -197,11 +197,11 @@ public class LevelVisualizationManager : MonoBehaviour
 
     private GameObject GetTerrainPrefab(string terrainType)
     {
-        return Resources.Load<GameObject>($"CodeBlocks/Terrain/{terrainType}");
+        return Resources.Load<GameObject>($"LevelEditor/Terrain/{terrainType}");
     }
 
     private GameObject GetObjectPrefab(string objectTypeId)
     {
-        return Resources.Load<GameObject>($"CodeBlocks/Objects/{objectTypeId}");
+        return Resources.Load<GameObject>($"LevelEditor/Objects/{objectTypeId}");
     }
 }

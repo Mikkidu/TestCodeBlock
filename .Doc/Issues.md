@@ -189,7 +189,7 @@
 - Detailed plan: [.Doc/Tasks/11_LoopBlock.md](Tasks/11_LoopBlock.md)
 
 ## #11a Архитектурный рефактор BlockUI - Гибридный подход
-- Status: [→] In Progress (2026-01-19)
+- Status: [✓] Done (2026-01-21)
 - Priority: 🟠 HIGH (подготовка к #12 и будущим If/IfElse блокам)
 - Description: Переработка архитектуры BlockUI с Composition на гибридный подход (BlockUIBase + наследование + Map коннекторов)
 - Motivation:
@@ -215,25 +215,98 @@
   - [✓] Шаг 5: Обновить SnapManager для работы с BlockUIBase
     - FindNearestSnap(BlockUIBase, List<BlockUI>)
     - GetInputConnectors(), GetOutputConnectors() вместо inputPoints/outputPoints
-  - [→] Шаг 6: Переделать LoopBlockUI : BlockUIBase
+  - [✓] Шаг 6: Переделать LoopBlockUI : BlockUIBase
     - Наследование вместо sibling component
     - 4 коннектора через AddConnector()
     - Override GetPrimaryInput/Output для внешних коннекторов
     - Override RecalculateSize()
-  - [ ] Шаг 7: Упростить API SnapManager
+  - [✓] Шаг 7: Упростить API SnapManager
     - ApplySnap(block, targetConnector, area) - без inputPoint параметра
     - ApplySnapToInput(block, targetConnector, area) - без outputPoint параметра
-  - [ ] Шаг 8: Обновить BlockFactory, ProgramArea
-    - BlockFactory возвращает BlockUIBase
-    - ProgramArea.GetBlocks() → List<BlockUIBase>
-  - [ ] Шаг 9: Централизовать SnapLineRenderer в ProgramArea
-  - [ ] Шаг 10: Обновить Loop prefab в Unity
+    - Исправлен баг LogBlockState (GetOutputConnectors)
+    - Удалены мёртвые методы и закомментированный код
+  - [✓] Шаг 8: Обновить BlockFactory, ProgramArea
+    - BlockFactory возвращает BlockUIBase (уже было)
+    - ProgramArea.GetBlocks() → List<BlockUIBase> (уже было)
+    - Исправлен баг в GetFirstBlock(): GetInputConnectors → GetOutputConnectors
+  - [✓] Шаг 9: Централизовать SnapLineRenderer в ProgramArea
+    - ProgramArea.SnapLineRenderer property добавлен
+    - BlockUIBase использует programArea.SnapLineRenderer
+  - [✓] Шаг 10: Обновить Loop prefab в Unity
     - Удалить компонент BlockUI
     - Добавить BlockDragHandler
     - Назначить blockImage, blockLabel в Inspector
-  - [ ] Шаг 11: Тестирование всех сценариев
+  - [✓] Шаг 11: Тестирование всех сценариев
 - Detailed plan: [.Doc/Tasks/11a_BlockUI_Refactor.md](Tasks/11a_BlockUI_Refactor.md)
 - Architecture Analysis: [.Doc/Architecture_BlockUI_Strategy.md](Architecture_BlockUI_Strategy.md)
+
+## #11b UPM пакет - подготовка и интеграция (Гибридный подход)
+- Status: [→] In Progress (2026-01-21)
+- Priority: 🔴 CRITICAL (подготовка к интеграции в основной проект)
+- Description: Преобразование проекта в UPM пакет (гибрид: код в Packages/, ассеты в Assets/) и тестирование интеграции через Git URL
+- Architecture:
+  - **Packages/com.codeblocks.robotprogramming/** — только скрипты (.cs), обновляется через UPM
+  - **Assets/CodeBlocks/** — префабы, уровни, конфиги, видимы команде
+- Progress:
+  - [✓] Создана структура UPM пакета в `Packages/com.codeblocks.robotprogramming/`
+    - package.json с правильными ссылками (github.com/mikkiducher/TestCodeBlock)
+    - Runtime/CodeBlocks.Runtime.asmdef
+    - Editor/CodeBlocks.Editor.asmdef
+    - CHANGELOG.md для версионирования
+    - README.md с инструкциями по установке
+    - MIGRATION_GUIDE_HYBRID.md — гибридный подход
+    - PRIVATE_REPO_GUIDE.md — работа с приватным репо
+  - [ ] Шаг 1: Создать Assets/CodeBlocks/ структуру
+    - Assets/CodeBlocks/Prefabs/UI/
+    - Assets/CodeBlocks/Prefabs/LevelEditor/Terrain/
+    - Assets/CodeBlocks/Prefabs/LevelEditor/Objects/
+    - Assets/CodeBlocks/Resources/Levels/
+    - Assets/CodeBlocks/Resources/Configs/
+  - [ ] Шаг 1.5: Переименовать namespace (ОПЦИОНАЛЬНО, но рекомендуется)
+    - RobotProgramming.* → CodeBlocks.*
+    - LevelEditor → CodeBlocks.LevelEditor
+    - Promises остаётся БЕЗ изменений!
+    - Инструкция: NAMESPACE_RENAME_GUIDE.md
+  - [ ] Шаг 2: Перенос Runtime скриптов → Packages/
+    - Assets/Scripts/RobotProgramming/* → Packages/.../Runtime/
+    - ⚠️ Assets/Scripts/Promises/* — НЕ переносить! (остаётся в Assets, внешняя зависимость)
+    - Assets/Scripts/LevelEditor/* (runtime) → Packages/.../Runtime/LevelEditor/
+  - [ ] Шаг 3: Перенос Editor скриптов → Packages/
+    - Assets/Scripts/LevelEditor/Editor/* → Packages/.../Editor/LevelEditor/
+  - [ ] Шаг 4: Перенос ассетов → Assets/CodeBlocks/
+    - Assets/PrefabsUI/* → Assets/CodeBlocks/Prefabs/UI/
+    - Assets/Resources/CodeBlocks/* → Assets/CodeBlocks/Prefabs/LevelEditor/
+    - Assets/Resources/RobotLevels/* → Assets/CodeBlocks/Resources/Levels/
+    - Assets/Resources/Configs/* → Assets/CodeBlocks/Resources/Configs/
+  - [ ] Шаг 5: Обновление путей Resources.Load в коде
+    - "RobotLevels/tutorial_01" → "Levels/tutorial_01"
+    - "CodeBlocks/Terrain/Ground" → "LevelEditor/Terrain/Ground"
+  - [ ] Шаг 6: Полное тестирование в TestCodeBlock
+    - Компиляция без ошибок
+    - Функциональность UI (drag-drop блоков)
+    - Функциональность Level Editor
+    - Запуск игры и выполнение программ
+  - [ ] Шаг 7: Подготовка Git репозитория
+    - Коммит структуры пакета
+    - Создание тега v1.0.0
+    - Push с тегом в origin/master
+  - [ ] Шаг 8: Тестирование интеграции в другом проекте
+    - Создать тестовый Unity проект
+    - Добавить пакет через git URL: `https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.0`
+    - Вручную скопировать Assets/CodeBlocks/ в новый проект (или через .unitypackage)
+    - Тестировать основные функции
+  - [ ] Шаг 9: Документирование процесса обновлений
+    - Как делать новые релизы (git tag)
+    - Как обновлять скрипты (Package Manager)
+    - Как обновлять ассеты (Export/Import)
+- Git URL для интеграции:
+  ```
+  https://github.com/mikkiducher/TestCodeBlock.git?path=Packages/com.codeblocks.robotprogramming#v1.0.0
+  ```
+- Resources:
+  - MIGRATION_GUIDE_HYBRID.md — пошаговая инструкция (гибридный подход)
+  - PRIVATE_REPO_GUIDE.md — работа с приватным репо
+  - README.md — Quick Start и документация
 
 ## #12 Параметры блоков
 - Status: Pending
