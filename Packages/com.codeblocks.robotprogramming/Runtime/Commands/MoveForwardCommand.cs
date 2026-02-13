@@ -22,7 +22,7 @@ namespace CodeBlocks.Commands
             return robot.MoveForward(distance);
         }
 
-        public override string GetDisplayName() => $"Вперёд ({distance})";
+        public override string GetDisplayName() => $"Forward ({distance})";
 
         public override Color GetBlockColor() => new Color(0.3f, 0.6f, 1f); // Blue
     }

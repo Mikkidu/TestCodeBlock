@@ -19,7 +19,7 @@ namespace CodeBlocks.Commands
             return robot.TurnLeft();
         }
 
-        public override string GetDisplayName() => "Влево ↺";
+        public override string GetDisplayName() => "Left ↺";
 
         public override Color GetBlockColor() => new Color(1f, 0.84f, 0f); // Gold
     }

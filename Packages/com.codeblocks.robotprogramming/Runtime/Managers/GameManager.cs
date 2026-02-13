@@ -30,6 +30,7 @@ namespace CodeBlocks.Managers
 
         private ICommand currentExecutingCommand;
         private bool isProgramRunning = false;
+        private bool isInitialized = false;
 
         private GridPositionTracker robotPositionTracker;
 
@@ -39,14 +40,20 @@ namespace CodeBlocks.Managers
         public event Action OnProgramCompleted;
         public event Action<Exception> OnProgramFailed;
 
-        private void Awake()
+        private void Init()
         {
+            // Prevent multiple initialization
+            if (isInitialized)
+            {
+                return;
+            }
+
             if (robotController == null)
             {
                 robotController = FindObjectOfType<RobotController>();
             }
             robotPositionTracker = robotController.GetComponent<GridPositionTracker>();
-            
+
 
             if (commandExecutor == null)
             {
@@ -98,14 +105,15 @@ namespace CodeBlocks.Managers
             {
                 blockPalette.PopulatePalette();
             }
-            
+
             levelRuntimeManager ??= FindFirstObjectByType<LevelRuntimeManager>();
-            
+
             robotPositionTracker.OnGridPositionChanged += OnRobotGridPositionChanged;
             robotPositionTracker.OnMovedToImpassableTerrain += OnRobotMovedToImpassable;
             robotPositionTracker.OnReachedFinish += OnRobotReachedFinish;
 
-            UpdateStatusDisplay();
+            isInitialized = true;
+            Debug.Log("GameManager: Initialized successfully");
         }
 
         private void OnDestroy()
@@ -156,12 +164,12 @@ namespace CodeBlocks.Managers
             if (startBlock == null)
             {
                 Debug.LogWarning("No program to run! Please add blocks to the program area.");
-                UpdateStatusDisplay("Программа пуста!");
+                UpdateStatusDisplay("Program is empty!");
                 return;
             }
 
             isProgramRunning = true;
-            UpdateStatusDisplay("Выполняется...");
+            UpdateStatusDisplay("Executing...");
             OnProgramStarted?.Invoke();
 
             if (commandExecutor != null && robotController != null)
@@ -190,21 +198,48 @@ namespace CodeBlocks.Managers
                 commandExecutor.Stop();
             }
             isProgramRunning = false;
-            UpdateStatusDisplay("Остановлено");
+            UpdateStatusDisplay("Stopped");
         }
-        
-        private void Start()
+
+        /// <summary>
+        /// Initialize and load a level. Can be called multiple times to switch levels.
+        /// This method performs lazy initialization on first call, then loads the specified level.
+        /// Always clears the program area and stops any running program.
+        /// </summary>
+        /// <param name="level">The level data to load</param>
+        public void InitLevel(LevelGridData level)
         {
-            if (currentLevel != null)
+            // Lazy initialization (only happens once)
+            if (!isInitialized)
             {
-                LoadLevel(currentLevel);
+                Init();
+            }
+
+            // Stop running program if any
+            if (isProgramRunning)
+            {
+                OnStopButtonClicked();
+            }
+
+            // Always clear program when loading new level
+            if (programArea != null)
+            {
+                programArea.ClearProgram();
+            }
+
+            // Load the level
+            if (level != null)
+            {
+                LoadLevel(level);
+                UpdateStatusDisplay("Level loaded");
             }
             else
             {
-                Debug.LogWarning("GameManager: No level assigned! Please assign a LevelGridData to 'Current Level' field.");
+                Debug.LogWarning("GameManager: Cannot initialize with null level!");
+                UpdateStatusDisplay("Level loading error");
             }
         }
-        
+
         public void LoadLevel(LevelGridData level)
         {
             if (level == null)
@@ -299,12 +334,12 @@ namespace CodeBlocks.Managers
             {
                 robotController.Reset();
             }
-            
+
             robotPositionTracker?.ResetPosition();
 
             isProgramRunning = false;
             currentExecutingCommand = null;
-            UpdateStatusDisplay("Сброс завершен");
+            UpdateStatusDisplay("Reset completed");
         }
 
         private void OnClearButtonClicked()
@@ -319,14 +354,14 @@ namespace CodeBlocks.Managers
                 programArea.ClearProgram();
             }
 
-            UpdateStatusDisplay("Программа очищена");
+            UpdateStatusDisplay("Program cleared");
         }
 
         private void OnCommandStartedHandler(ICommand command)
         {
             currentExecutingCommand = command;
             OnCommandStarted?.Invoke(command);
-            UpdateStatusDisplay($"Выполняется: {command.GetDisplayName()}");
+            UpdateStatusDisplay($"Executing: {command.GetDisplayName()}");
             HighlightBlock(command);
         }
 
@@ -341,7 +376,7 @@ namespace CodeBlocks.Managers
             isProgramRunning = false;
             currentExecutingCommand = null;
             OnProgramCompleted?.Invoke();
-            UpdateStatusDisplay("Программа завершена!");
+            UpdateStatusDisplay("Program completed!");
             ClearBlockHighlight();
         }
         
@@ -372,7 +407,7 @@ namespace CodeBlocks.Managers
             currentExecutingCommand = null;
 
             // Update UI
-            UpdateStatusDisplay("Уровень пройден! 🎉");
+            UpdateStatusDisplay("Level completed! 🎉");
 
             // Clear block highlight
             ClearBlockHighlight();
@@ -409,7 +444,7 @@ namespace CodeBlocks.Managers
         {
             isProgramRunning = false;
             OnProgramFailed?.Invoke(exception);
-            UpdateStatusDisplay($"Ошибка: {exception.Message}");
+            UpdateStatusDisplay($"Error: {exception.Message}");
             ClearBlockHighlight();
             Debug.LogError($"Program execution failed: {exception.Message}");
         }
@@ -420,7 +455,7 @@ namespace CodeBlocks.Managers
             {
                 if (message == null)
                 {
-                    message = isProgramRunning ? "Выполняется..." : "Готово";
+                    message = isProgramRunning ? "Executing..." : "Ready";
                 }
                 statusText.text = message;
             }
@@ -431,7 +466,7 @@ namespace CodeBlocks.Managers
             if (progressText != null && commandExecutor != null)
             {
                 float progress = commandExecutor.Progress * 100f;
-                progressText.text = $"Прогресс: {progress:F1}%";
+                progressText.text = $"Progress: {progress:F1}%";
             }
         }
 

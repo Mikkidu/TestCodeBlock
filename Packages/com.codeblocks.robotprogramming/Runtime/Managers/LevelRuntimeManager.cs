@@ -47,8 +47,9 @@ namespace CodeBlocks.Managers
 
             // Create container at world origin - all objects will be positioned relative to (0,0,0)
             levelContainer = new GameObject("LevelRuntime");
-            levelContainer.transform.SetParent(transform);
             levelContainer.transform.position = Vector3.zero; // Always at world center!
+            levelContainer.transform.localScale = Vector3.one;
+            levelContainer.transform.SetParent(transform);
 
             // Load components in next steps...
             

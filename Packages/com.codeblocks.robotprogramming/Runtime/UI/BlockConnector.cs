@@ -8,9 +8,9 @@ namespace CodeBlocks.UI
         public enum ParameterType { None, Number, String, Boolean, Vector }
         public enum ConnectorRole
         {
-            External,        // обычные блоки (вход/выход)
-            InternalOutput,  // Loop: верхний внутренний (передаёт управление внутрь)
-            InternalInput    // Loop: нижний внутренний (принимает возврат из итерации)
+            External,        // regular blocks (input/output)
+            InternalOutput,  // Loop: upper internal (passes control inside)
+            InternalInput    // Loop: lower internal (receives return from iteration)
         }
 
         // Main properties
@@ -23,7 +23,7 @@ namespace CodeBlocks.UI
 
         // Loop block connectors
         public ConnectorRole role = ConnectorRole.External;
-        //public LoopBlockUI ownerLoop;        // для внутренних коннекторов - ссылка на Loop
+        //public LoopBlockUI ownerLoop;        // for internal connectors - reference to Loop
 
         // Future use - parameter passing
         public ParameterType parameterType = ParameterType.None;

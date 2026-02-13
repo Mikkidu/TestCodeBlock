@@ -168,8 +168,11 @@ This project maintains a **two-level task tracking approach** for clarity and vi
 
 ### Language Rules - STRICT
 - **Chat communication with user:** Russian (Русский) only
-- **Code comments:** English only - NO Russian comments in code files
-- **Variable/Function names:** English only
+- **Code files (.cs, .shader, etc.):** English only - **NO CYRILLIC AT ALL**
+  - Comments: English only
+  - Variable/Function names: English only
+  - String literals: English only (Debug.Log, error messages, UI text, etc.)
+  - Exception: Localization strings loaded from external files (not hardcoded)
 - **Documentation files (.md):** Russian for content, English for code blocks
 
 ## Important Notes

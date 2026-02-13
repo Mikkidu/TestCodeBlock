@@ -88,7 +88,7 @@ public class GridVisualizer : MonoBehaviour
     {
         Event evt = Event.current;
 
-        // Игнорируем middle mouse button и модификаторы
+        // Ignore middle mouse button and modifiers
         if ((evt.button == 2) || evt.alt || evt.control || evt.shift)
             return;
 
@@ -177,7 +177,7 @@ public class GridVisualizer : MonoBehaviour
             Vector3 hitPoint = ray.origin + ray.direction * enter;
             Vector2Int gridPos = WorldToGridPos(hitPoint);
 
-            // Debug: проверяем точность
+            // Debug: checking accuracy
             Vector3 gridWorld = GridToWorldPos(gridPos) + new Vector3(cellSize * 0.5f, 0, cellSize * 0.5f);
             Debug.Log($"RayHit: {hitPoint}, GridPos: {gridPos}, GridWorld: {gridWorld}, Dist: {Vector3.Distance(hitPoint, gridWorld):F2}");
 

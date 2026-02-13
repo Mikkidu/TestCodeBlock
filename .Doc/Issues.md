@@ -536,6 +536,37 @@
 - Solution Doc: [.Doc/BACKLOG_DragFromLoop_Solution.md](BACKLOG_DragFromLoop_Solution.md)
 - **NEXT:** Протестировать в Unity Editor
 
+## #24 Инициализация уровня по запросу - InitLevel() API (КРИТИЧНА ДЛЯ ИНТЕГРАЦИИ В PLAY-UNITED)
+- Status: [→] In Progress (2026-01-26)
+- Priority: 🔴 CRITICAL (блокирует интеграцию в play-united)
+- Depends On: #18 ✓, #19 ✓, #20 ✓, #21 ✓
+- Description: Создать публичный API `InitLevel(LevelGridData)` для множественной загрузки уровней с автоматической очисткой программы и ленивой инициализацией
+- Progress:
+  - [✓] Шаг 1: Реализован метод `InitLevel()` с ленивой инициализацией (2026-01-26)
+    - Добавлен флаг `isInitialized`
+    - Переделан `Init()` с защитой от повторной инициализации
+    - Создан публичный метод `InitLevel(LevelGridData)` с автоочисткой программы
+    - Обновлён `Start()` для вызова `InitLevel`
+    - Обновлён `LevelRuntimeManagerTest` для использования нового API
+  - [ ] Шаг 2: Тестирование в Unity Editor
+  - [ ] Шаг 3: Debug UI для переключения уровней
+  - [ ] Шаг 4: Memory Profiler тесты
+- Architecture:
+  - `Init()` - приватный, однократный (компоненты + события)
+  - `InitLevel(level)` - публичный, многократный (загрузка уровня + очистка программы)
+  - Ленивая инициализация: `InitLevel()` автоматически вызывает `Init()` при первом запуске
+- Key Features:
+  - ✅ Всегда останавливает программу перед загрузкой
+  - ✅ Всегда очищает ProgramArea при загрузке нового уровня
+  - ✅ LevelRuntimeManager.ClearLevel() автоматически удаляет старые GameObjects
+  - ✅ GridPositionTracker.Initialize() сбрасывает `hasReachedFinish` флаг
+- Usage in play-united:
+  - Новый уровень: `gameManager.InitLevel(nextLevel)` → очистка программы
+  - Рестарт: `gameManager.OnResetButtonClicked()` → без очистки программы
+- Detailed plan: [.Doc/Tasks/24_Step1_InitLevel_Implementation.md](Tasks/24_Step1_InitLevel_Implementation.md)
+
+---
+
 ## #23 BUG: Позиционирование сброшенных блоков в локальных координатах
 - Status: [✓] Done (2026-01-23)
 - Priority: 🔴 CRITICAL

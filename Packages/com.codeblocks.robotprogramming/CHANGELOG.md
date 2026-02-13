@@ -5,6 +5,22 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-01-26
+
+    ### Added
+    - InitLevel() API for multiple level loading (#24)
+
+    ### Fixed
+    - Memory leaks when switching levels
+
+    ### Changed
+    - **All code comments and strings translated to English**
+      - Removed all Cyrillic text from 12 source files
+      - Translated comments in CodeBlocksLevelEditorWindow, Commands, UI components
+      - Translated Debug.Log messages and display names ("Вперёд" → "Forward", "Назад" → "Backward", etc.)
+      - All UI status messages now in English ("Программа пуста!" → "Program is empty!", "Выполняется..." → "Executing...")
+      - Code now fully complies with English-only policy
+
 ## [1.0.5] - 2026-01-23
 
 ### Fixed

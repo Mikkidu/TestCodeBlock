@@ -29,7 +29,7 @@ namespace CodeBlocks.UI
         // 1. Calculate distance from INPUT of dragging block to OUTPUT of all blocks (including Loop InternalOutput)
         // 2. Calculate distance from OUTPUT of dragging block to INPUT of blocks without incoming connection
         // 3. Choose the snap type with SMALLER distance (INPUT→OUTPUT on tie)
-        // STEP 1b: Also check Loop blocks' InternalOutput coннекторы for internal block insertion
+        // STEP 1b: Also check Loop blocks' InternalOutput connectors for internal block insertion
         public SnapInfo FindNearestSnap(BlockUIBase draggingBlock, List<BlockUIBase> allBlocks)
         {
             if (draggingBlock == null)
@@ -225,7 +225,7 @@ namespace CodeBlocks.UI
                 return;
             }
             
-            // bug: parent block is empty for loop inner output 
+            // bug: parent block is empty for loop inner output
             BlockUIBase targetBlock = targetOutput.parentBlock;
 
             // Use provided programArea, or try to find it
@@ -233,8 +233,8 @@ namespace CodeBlocks.UI
             {
                 programArea = draggingBlock.GetComponentInParent<ProgramArea>();
             }
-            
-            // question: newer call?
+
+            // note: never called?
             List<BlockUIBase> allBlocks = programArea?.GetBlocks() ?? new List<BlockUIBase>();
 
             // Log state before snap

@@ -295,7 +295,7 @@ public class CodeBlocksLevelEditorWindow : EditorWindow
         GUILayout.Label("Mini Map (matches Scene View top-down)", EditorStyles.miniLabel);
         GUILayout.BeginVertical(GUILayout.Width(mapSize * cellPixels), GUILayout.Height(mapSize * cellPixels));
 
-        // Отрисовываем в ОБРАТНОМ порядке Y чтобы соответствовать виду сверху
+        // Draw in REVERSE Y order to match top-down view
         for (int y = currentLevel.gridHeight - 1; y >= 0 && y >= currentLevel.gridHeight - mapSize; y--)
         {
             GUILayout.BeginHorizontal();

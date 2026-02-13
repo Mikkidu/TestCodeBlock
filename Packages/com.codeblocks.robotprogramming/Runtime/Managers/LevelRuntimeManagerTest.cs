@@ -3,20 +3,29 @@ using CodeBlocks.Managers;
 
 public class LevelRuntimeManagerTest : MonoBehaviour
 {
-    [SerializeField] private LevelRuntimeManager levelManager;
+    [SerializeField] private GameManager gameManager;
     [SerializeField] private LevelGridData testLevel;
 
     private void Start()
     {
-        if (levelManager != null && testLevel != null)
+        if (gameManager != null && testLevel != null)
         {
-            levelManager.LoadLevel(testLevel);
+            // Use new InitLevel API instead of direct LoadLevel
+            gameManager.InitLevel(testLevel);
             TestCoordinateConversion();
         }
     }
 
     private void TestCoordinateConversion()
     {
+        // Find LevelRuntimeManager for coordinate testing
+        LevelRuntimeManager levelManager = FindFirstObjectByType<LevelRuntimeManager>();
+        if (levelManager == null)
+        {
+            Debug.LogError("LevelRuntimeManagerTest: LevelRuntimeManager not found!");
+            return;
+        }
+
         // Test Grid → World → Grid
         Vector2Int originalGrid = new Vector2Int(3, 4);
         Vector3 worldPos = levelManager.GetWorldPosition(originalGrid);

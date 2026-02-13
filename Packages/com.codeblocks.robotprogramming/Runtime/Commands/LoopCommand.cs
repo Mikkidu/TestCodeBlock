@@ -24,7 +24,7 @@ namespace CodeBlocks.Commands
         }
 
         /// <summary>
-        /// Основной метод выполнения - вызывается когда управление входит в цикл извне
+        /// Main execution method - called when control enters the loop from outside
         /// </summary>
         public override IPromise Execute(IRobotController robot, ExecutionContext context)
         {
@@ -35,8 +35,8 @@ namespace CodeBlocks.Commands
         }
 
         /// <summary>
-        /// Вызывается когда управление вернулось из последнего блока внутри цикла
-        /// (через внутренний INPUT коннектор)
+        /// Called when control returns from the last block inside the loop
+        /// (via internal INPUT connector)
         /// </summary>
         public IPromise ExecuteFromInternalInput(IRobotController robot, ExecutionContext context)
         {
@@ -45,27 +45,27 @@ namespace CodeBlocks.Commands
         }
 
         /// <summary>
-        /// Внутренняя логика: проверка условия, выполнение блоков или переход дальше
+        /// Internal logic: check condition, execute blocks or continue further
         /// </summary>
         private IPromise ExecuteIteration(IRobotController robot, ExecutionContext context)
         {
             Debug.Log($"[LOOP] ExecuteIteration called (iteration {currentIteration})");
 
-            // Проверка условия остановки
+            // Check stop condition
             if (shouldStop)
             {
                 Debug.Log($"[LOOP] Stopped after {currentIteration} iterations");
                 return ContinueAfterLoop(robot, context);
             }
 
-            // Проверка условия цикла (пока бесконечный - всегда true)
+            // Check loop condition (currently infinite - always true)
             if (!CheckCondition())
             {
                 Debug.Log($"[LOOP] Condition false, exiting after {currentIteration} iterations");
                 return ContinueAfterLoop(robot, context);
             }
 
-            // Получить первый блок внутри цикла
+            // Get first block inside the loop
             if (loopBlockUI == null)
             {
                 Debug.LogError("[LOOP] loopBlockUI is NULL!");
@@ -81,20 +81,20 @@ namespace CodeBlocks.Commands
                 return ContinueAfterLoop(robot, context);
             }
 
-            // Начало новой итерации
+            // Start new iteration
             currentIteration++;
             Debug.Log($"[LOOP] Starting iteration {currentIteration}");
             context.SetVariable("loop_iteration", currentIteration - 1);
 
-            // Передать управление первому блоку внутри
-            // Блоки будут выполняться по цепочке
-            // Когда последний блок вернёт управление через внутренний input коннектор,
-            // должен быть вызван специальный обработчик
+            // Pass control to the first block inside
+            // Blocks will execute in sequence
+            // When the last block returns control via internal input connector,
+            // a special handler should be called
             return ExecuteInnerChain(firstInner, robot, context);
         }
 
         /// <summary>
-        /// Выполнить цепочку блоков внутри цикла
+        /// Execute chain of blocks inside the loop
         /// </summary>
         private IPromise ExecuteInnerChain(BlockUIBase startBlock, IRobotController robot, ExecutionContext context)
         {
@@ -128,15 +128,15 @@ namespace CodeBlocks.Commands
 
                         if (nextBlock != null)
                         {
-                            // Есть следующий блок в цепочке внутри цикла
+                            // There is next block in the chain inside the loop
                             ExecuteInnerChain(nextBlock, robot, context)
                                 .Done(() => chainDeferred.Resolve())
                                 .Fail(ex => chainDeferred.Reject(ex));
                         }
                         else
                         {
-                            // Это был последний блок внутри цикла
-                            // Вернуться к началу цикла через ExecuteIteration
+                            // This was the last block inside the loop
+                            // Return to loop start via ExecuteIteration
                             Debug.Log("[LOOP] Last block in chain, returning to loop");
                             ExecuteIteration(robot, context)
                                 .Done(() => chainDeferred.Resolve())
@@ -150,7 +150,7 @@ namespace CodeBlocks.Commands
         }
 
         /// <summary>
-        /// Продолжить выполнение после выхода из цикла
+        /// Continue execution after exiting the loop
         /// </summary>
         private IPromise ContinueAfterLoop(IRobotController robot, ExecutionContext context)
         {
@@ -167,19 +167,19 @@ namespace CodeBlocks.Commands
         }
 
         /// <summary>
-        /// Проверить условие цикла
-        /// Пока это всегда true (бесконечный цикл)
-        /// В будущем здесь будет: iteration < maxCount, условие переменной, и т.д.
+        /// Check loop condition
+        /// Currently always true (infinite loop)
+        /// In the future: iteration < maxCount, variable condition, etc.
         /// </summary>
         private bool CheckCondition()
         {
-            // Бесконечный цикл - всегда true
-            // Можно выйти только через Stop button или очистку цикла
+            // Infinite loop - always true
+            // Can exit only via Stop button or clearing the loop
             return true;
         }
 
         /// <summary>
-        /// Остановить цикл (вызывается кнопкой Stop)
+        /// Stop the loop (called via Stop button)
         /// </summary>
         public void RequestStop()
         {
@@ -187,7 +187,7 @@ namespace CodeBlocks.Commands
             shouldStop = true;
         }
 
-        public override string GetDisplayName() => "Цикл (∞)";
+        public override string GetDisplayName() => "Loop (∞)";
 
         public override Color GetBlockColor() => new Color(0.8f, 0.4f, 0.8f); // Purple
     }

@@ -9,19 +9,19 @@ namespace CodeBlocks.UI
     public class LoopBlockUI : BlockUIBase
     {
         [Header("External Connectors")]
-        [SerializeField] private RectTransform externalInputPoint;   // вход (снаружи слева сверху)
-        [SerializeField] private RectTransform externalOutputPoint;  // выход (снаружи слева внизу)
+        [SerializeField] private RectTransform externalInputPoint;   // input (outside left top)
+        [SerializeField] private RectTransform externalOutputPoint;  // output (outside left bottom)
 
         [Header("Internal Connectors")]
-        [SerializeField] private RectTransform internalOutputPoint;  // верхний внутренний (передаёт внутрь)
-        [SerializeField] private RectTransform internalInputPoint;   // нижний внутренний (принимает возврат)
+        [SerializeField] private RectTransform internalOutputPoint;  // upper internal (passes control inside)
+        [SerializeField] private RectTransform internalInputPoint;   // lower internal (receives return)
 
         [Header("Visual Elements")]
         [SerializeField] private RectTransform header;      // 300x50
         [SerializeField] private RectTransform footer;      // 250x25
-        [SerializeField] private RectTransform container;   // основной контейнер
+        [SerializeField] private RectTransform container;   // main container
 
-        // Размеры константы
+        // Size constants
         private const float HEADER_HEIGHT = 50f;
         private const float FOOTER_HEIGHT = 25f;
         private const float MIN_INNER_GAP = 25f;
@@ -43,7 +43,7 @@ namespace CodeBlocks.UI
             AddConnector(EXTERNAL_INPUT, BlockConnector.PointType.Input, externalInputPoint);
             AddConnector(EXTERNAL_OUTPUT, BlockConnector.PointType.Output, externalOutputPoint);
 
-            // Internal connectors (для блоков внутри цикла)
+            // Internal connectors (for blocks inside the loop)
             AddConnector(INTERNAL_OUTPUT, BlockConnector.PointType.Output, internalOutputPoint,
                 BlockConnector.ConnectorRole.InternalOutput);
             AddConnector(INTERNAL_INPUT, BlockConnector.PointType.Input, internalInputPoint,
@@ -63,7 +63,7 @@ namespace CodeBlocks.UI
         }
 
         /// <summary>
-        /// Получить первый блок внутри цикла (подключённый к InternalOutput)
+        /// Get the first block inside the loop (connected to InternalOutput)
         /// </summary>
         public BlockUIBase GetFirstInnerBlock()
         {
@@ -75,7 +75,7 @@ namespace CodeBlocks.UI
         }
 
         /// <summary>
-        /// Проверить содержит ли цикл хотя бы один блок
+        /// Check if the loop contains at least one block
         /// </summary>
         public bool HasInnerBlocks()
         {
@@ -94,8 +94,8 @@ namespace CodeBlocks.UI
         }
 
         /// <summary>
-        /// Получить последний блок в цепочке внутри цикла НАПРЯМУЮ через InternalInput
-        /// (Коннектор Input привязан к последнему блоку по определению)
+        /// Get the last block in the chain inside the loop DIRECTLY via InternalInput
+        /// (Input connector is bound to the last block by definition)
         /// </summary>
         public BlockUIBase GetLastInnerBlockDirect()
         {
@@ -108,7 +108,7 @@ namespace CodeBlocks.UI
         
 
         /// <summary>
-        /// Пересчитать высоту Loop контейнера на основе содержимого
+        /// Recalculate Loop container height based on contents
         /// </summary>
           public override void RecalculateSize()
           {

@@ -26,7 +26,7 @@ namespace CodeBlocks.Commands
             });
         }
 
-        public override string GetDisplayName() => $"Ждать {duration}с";
+        public override string GetDisplayName() => $"Wait {duration}s";
 
         public override Color GetBlockColor() => new Color(0.8f, 0.8f, 0.3f); // Yellow
     }

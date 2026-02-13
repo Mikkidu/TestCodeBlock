@@ -19,7 +19,7 @@ namespace CodeBlocks.Commands
             return robot.TurnRight();
         }
 
-        public override string GetDisplayName() => "Вправо ↻";
+        public override string GetDisplayName() => "Right ↻";
 
         public override Color GetBlockColor() => new Color(0.2f, 0.8f, 0.2f); // Green
     }

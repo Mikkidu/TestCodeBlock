@@ -32,6 +32,10 @@ namespace CodeBlocks.Robot
             {
                 startRotation = transform.rotation;
             }
+
+            var localScale = transform.localScale;
+            var lossyScale = transform.lossyScale;
+            transform.localScale = new Vector3(localScale.x / lossyScale.x, localScale.y / lossyScale.y, localScale.z / lossyScale.z);
         }
         
         public void SetStartPosition(Vector3 position, Quaternion rotation)
